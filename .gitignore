@@ -3,6 +3,9 @@ node_modules/
 .pnp
 .pnp.js
 
+# ── Local Node.js binary (not needed in repo) ─────────────────────────────────
+.node/
+
 # ── Environment Variables ──────────────────────────────────────────────────────
 .env
 .env.local
