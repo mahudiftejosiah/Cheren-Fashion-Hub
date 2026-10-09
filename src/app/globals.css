@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #FAF4F8;
+  --color-card: #FFFFFF;
+  --color-text: #1F0A27;
+  --color-muted: #7A5B86;
+  --color-border: #F3E4EF;
+  --color-pink: #EC4899;
+  --color-purple: #9333EA;
+  --color-red: #EF4444;
+}
+
+.dark {
+  --color-bg: #0D0614;
+  --color-card: #190B28;
+  --color-text: #F9F5FB;
+  --color-muted: #B39CBF;
+  --color-border: #2D1445;
+  --color-pink: #F472B6;
+  --color-purple: #C084FC;
+  --color-red: #F87171;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Outfit', sans-serif;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  overflow-x: hidden;
+}
+
+/* Luxury Serif Typography */
+h1, h2, h3, .font-fashion-serif {
+  font-family: 'Cormorant Garamond', 'Playfair Display', serif;
+}
+
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+}
+
+/* Shimmering Red, Pink & Purple Text Gradient */
+.gold-gradient-text, .fashion-gradient-text {
+  background: linear-gradient(135deg, #FF4D4D 0%, #F43F5E 25%, #EC4899 50%, #D946EF 75%, #A855F7 100%);
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 4s linear infinite;
+}
+
+@keyframes shine {
+  to {
+    background-position: 250% center;
+  }
+}
+
+/* Decorative Red-Pink-Purple Borders */
+.luxury-border {
+  position: relative;
+  border: 1px solid rgba(236, 72, 153, 0.3);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.luxury-border::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 16px;
+  height: 16px;
+  border-top: 2px solid #EF4444;
+  border-left: 2px solid #EC4899;
+  pointer-events: none;
+}
+
+.luxury-border::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 16px;
+  height: 16px;
+  border-bottom: 2px solid #9333EA;
+  border-right: 2px solid #EC4899;
+  pointer-events: none;
+}
+
+.luxury-border:hover {
+  border-color: rgba(236, 72, 153, 0.7);
+  box-shadow: 0 0 30px rgba(236, 72, 153, 0.3);
+}
+
+/* Glassmorphism Panels */
+.glass-panel-luxury {
+  background: rgba(25, 11, 40, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(236, 72, 153, 0.25);
+}
+
+html:not(.dark) .glass-panel-luxury {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+/* Red, Pink & Purple Glow Animations */
+.shadow-gold-glow, .shadow-pink-glow {
+  box-shadow: 0 0 35px rgba(236, 72, 153, 0.35);
+}
+
+.shadow-gold-glow-lg, .shadow-pink-glow-lg {
+  box-shadow: 0 0 65px rgba(239, 68, 68, 0.45);
+}
+
+.shadow-purple-glow {
+  box-shadow: 0 0 35px rgba(147, 51, 234, 0.4);
+}
+
+/* Ornamental Line Divider */
+.ornamental-divider {
+  display: flex;
+  items-center: center;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.ornamental-line {
+  height: 1px;
+  width: 100px;
+  background: linear-gradient(90deg, transparent, #EC4899, #9333EA, transparent);
+}
+
+/* Animated Floating Red-Pink-Purple Orbs */
+.gold-orb, .fashion-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.22) 0%, rgba(147, 51, 234, 0.15) 50%, rgba(239, 68, 68, 0) 75%);
+  filter: blur(45px);
+  pointer-events: none;
+  animation: floatOrb 8s ease-in-out infinite alternate;
+}
+
+@keyframes floatOrb {
+  0% { transform: translateY(0px) scale(1); }
+  100% { transform: translateY(-30px) scale(1.1); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #EF4444, #EC4899, #9333EA);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #F87171, #F472B6, #C084FC);
+}
+

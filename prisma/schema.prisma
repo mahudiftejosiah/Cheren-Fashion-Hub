@@ -1,0 +1,221 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model AdminUser {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("ADMIN")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  phone     String
+  address   String?
+  notes     String?
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id                     String               @id @default(uuid())
+  trackingNumber         String               @unique // e.g. FH-2026-0001 (human-readable, admin use)
+  trackingId             String               @unique @default(uuid()) // unguessable UUID for public API
+  customerId             String?
+  customer               Customer?            @relation(fields: [customerId], references: [id])
+  customerName           String
+  customerEmail          String
+  customerPhone          String
+  outfitTitle            String
+  description            String
+  measurements           String?
+  status                 String               @default("ORDER_RECEIVED")
+  // Workflow: ORDER_RECEIVED -> CONSULTATION -> MEASUREMENTS_CONFIRMED -> IN_PRODUCTION -> QUALITY_CHECK -> READY -> OUT_FOR_DELIVERY -> DELIVERED -> CUSTOMER_CONFIRMED
+  expectedCompletionDate String?
+  deliveryAddress        String?
+  confirmedAt            DateTime?
+  deleteAt               DateTime? // Set to confirmedAt + 24h when status reaches CUSTOMER_CONFIRMED
+  internalNotes          String?
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  history                OrderStatusHistory[]
+  feedback               Feedback?
+}
+
+model OrderStatusHistory {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    String
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+model Collection {
+  id           String        @id @default(uuid())
+  title        String
+  slug         String        @unique
+  category     String        // Women's Wear, Men's Wear, Traditional/African Wear, Occasion Wear, Custom Designs, Ready-to-Wear
+  description  String
+  coverImage   String
+  isFeatured   Boolean       @default(false)
+  isPublished  Boolean       @default(true)
+  fashionItems FashionItem[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model FashionItem {
+  id           String      @id @default(uuid())
+  collectionId String?
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  title        String
+  description  String
+  category     String
+  tags         String?     // Comma-separated tags
+  isFeatured   Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  media        Media[]
+}
+
+model Media {
+  id            String       @id @default(uuid())
+  fashionItemId String
+  fashionItem   FashionItem  @relation(fields: [fashionItemId], references: [id], onDelete: Cascade)
+  url           String
+  mediaType     String       @default("IMAGE") // IMAGE or VIDEO
+  altText       String?
+  createdAt     DateTime     @default(now())
+}
+
+model Video {
+  id           String   @id @default(uuid())
+  title        String
+  description  String
+  videoUrl     String
+  thumbnailUrl String
+  category     String
+  isFeatured   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model Feedback {
+  id           String   @id @default(uuid())
+  orderId      String?  @unique
+  order        Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  customerName String
+  rating       Int      // 1 to 5
+  review       String
+  imageUrl     String?  // Optional customer photo
+  isApproved   Boolean  @default(false)
+  isFeatured   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model ApprenticeshipApplication {
+  id              String   @id @default(uuid())
+  fullName        String
+  phone           String
+  email           String
+  location        String
+  experienceLevel String   // Beginner, Intermediate, Advanced
+  skillLevel      String
+  motivation      String
+  availability    String
+  status          String   @default("PENDING") // PENDING, REVIEWED, ACCEPTED, REJECTED
+  internalNotes   String?
+  createdAt       DateTime @default(now())
+}
+
+model QuoteRequest {
+  id                String   @id @default(uuid())
+  fullName          String
+  phone             String
+  email             String
+  outfitType        String
+  description       String
+  preferredFabric   String?
+  desiredDeadline   String?
+  referenceImageUrl String?
+  status            String   @default("PENDING") // PENDING, CONTACTED, QUOTED, CLOSED
+  internalNotes     String?
+  createdAt         DateTime @default(now())
+}
+
+model Appointment {
+  id             String   @id @default(uuid())
+  name           String
+  phone          String
+  email          String
+  preferredDate  String
+  preferredTime  String
+  serviceType    String
+  additionalInfo String?
+  status         String   @default("PENDING") // PENDING, APPROVED, RESCHEDULED, REJECTED, COMPLETED
+  internalNotes  String?
+  createdAt      DateTime @default(now())
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String?
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model FAQ {
+  id           String   @id @default(uuid())
+  question     String
+  answer       String
+  category     String   @default("General")
+  displayOrder Int      @default(0)
+  isPublished  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  type      String   // ORDER, QUOTE, APPOINTMENT, APPRENTICESHIP, FEEDBACK, CONTACT, CONFIRMATION
+  linkUrl   String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model BusinessSettings {
+  id              String   @id @default("default")
+  businessName    String   @default("Fashion Hub")
+  tagline         String   @default("Where Your Style Becomes Reality.")
+  logoUrl         String?
+  phone           String   @default("+234 800 123 4567")
+  email           String   @default("contact@fashionhub.com")
+  whatsappNumber  String   @default("2348001234567")
+  address         String   @default("12 Fashion Avenue, Victoria Island, Lagos")
+  openingHours    String   @default("Mon - Sat: 9:00 AM - 6:00 PM")
+  instagramUrl    String   @default("https://instagram.com")
+  tiktokUrl       String   @default("https://tiktok.com")
+  facebookUrl     String   @default("https://facebook.com")
+  bioText         String   @default("Bespoke tailoring and modern luxury fashion designs crafted with precision and passion.")
+  missionText     String   @default("To empower individuals through elegant, custom-crafted apparel that reflects their unique style.")
+  visionText      String   @default("To be the world's premier fashion and tailoring house celebrating heritage and contemporary design.")
+  themeDefault    String   @default("dark")
+  updatedAt       DateTime @updatedAt
+}

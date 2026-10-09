@@ -1,0 +1,13 @@
+export const WORKFLOW_STAGES = [
+  'ORDER_RECEIVED',
+  'CONSULTATION',
+  'MEASUREMENTS_CONFIRMED',
+  'IN_PRODUCTION',
+  'QUALITY_CHECK',
+  'READY',
+  'OUT_FOR_DELIVERY',
+  'DELIVERED',
+  'CUSTOMER_CONFIRMED',
+] as const;
+
+export type WorkflowStage = (typeof WORKFLOW_STAGES)[number];
