@@ -31,7 +31,7 @@ interface FashionItemData {
   title: string;
   description: string;
   category: string;
-  tags: string;
+  tags: string | null;
   isFeatured: boolean;
   media: MediaItem[];
 }
