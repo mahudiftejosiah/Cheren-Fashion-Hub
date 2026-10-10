@@ -26,7 +26,7 @@ export async function getOrderByTrackingNumber(trackingNumber: string) {
       return { success: false, error: `No order found with tracking reference "${cleanTracking}".` };
     }
 
-    const currentStageIndex = WORKFLOW_STAGES.indexOf(order.status as typeof WORKFLOW_STAGES[number]);
+    const currentStageIndex = WORKFLOW_STAGES.indexOf(order.status);
 
     return {
       success: true,

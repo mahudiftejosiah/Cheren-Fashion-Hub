@@ -1,4 +1,4 @@
-export const WORKFLOW_STAGES = [
+export const WORKFLOW_STAGES: string[] = [
   'ORDER_RECEIVED',
   'CONSULTATION',
   'MEASUREMENTS_CONFIRMED',
@@ -8,6 +8,15 @@ export const WORKFLOW_STAGES = [
   'OUT_FOR_DELIVERY',
   'DELIVERED',
   'CUSTOMER_CONFIRMED',
-] as const;
+];
 
-export type WorkflowStage = (typeof WORKFLOW_STAGES)[number];
+export type WorkflowStage =
+  | 'ORDER_RECEIVED'
+  | 'CONSULTATION'
+  | 'MEASUREMENTS_CONFIRMED'
+  | 'IN_PRODUCTION'
+  | 'QUALITY_CHECK'
+  | 'READY'
+  | 'OUT_FOR_DELIVERY'
+  | 'DELIVERED'
+  | 'CUSTOMER_CONFIRMED';
