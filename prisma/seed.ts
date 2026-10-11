@@ -124,27 +124,30 @@ async function main() {
   }
   console.log('✅ Collections & Fashion items seeded.');
 
-  // 4. Seed Videos
-  await prisma.video.createMany({
-    data: [
-      {
-        title: 'Behind the Scenes: Crafting the Royal Agbada',
-        description: 'Watch our master tailors meticulously hand-embroider 100% cotton silk fabric.',
-        videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?q=80&w=800&auto=format&fit=crop',
-        category: 'Behind the Scenes',
-        isFeatured: true,
-      },
-      {
-        title: 'Runway Highlights - Autumn Fashion Showcase',
-        description: 'Exclusive look at our signature womenswear line featured on the international runway.',
-        videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop',
-        category: 'Fashion Show',
-        isFeatured: true,
-      },
-    ],
-  });
+  // 4. Seed Videos — skip if already exist
+  const videoCount = await prisma.video.count();
+  if (videoCount === 0) {
+    await prisma.video.createMany({
+      data: [
+        {
+          title: 'Behind the Scenes: Crafting the Royal Agbada',
+          description: 'Watch our master tailors meticulously hand-embroider 100% cotton silk fabric.',
+          videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?q=80&w=800&auto=format&fit=crop',
+          category: 'Behind the Scenes',
+          isFeatured: true,
+        },
+        {
+          title: 'Runway Highlights - Autumn Fashion Showcase',
+          description: 'Exclusive look at our signature womenswear line featured on the international runway.',
+          videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop',
+          category: 'Fashion Show',
+          isFeatured: true,
+        },
+      ],
+    });
+  }
   console.log('✅ Video showcase seeded.');
 
   // 5. Seed Customer & Sample Orders
@@ -226,8 +229,10 @@ async function main() {
   });
   console.log(`✅ Sample orders seeded: ${order1.trackingNumber}, ${order2.trackingNumber}`);
 
-  // 6. Seed FAQs
-  const faqs = [
+  // 6. Seed FAQs — skip if already exist
+  const faqCount = await prisma.fAQ.count();
+  if (faqCount === 0) {
+    const faqs = [
     {
       question: 'How do I place an order?',
       answer: 'You can request a quotation online or book an in-person consultation through our website. Once we discuss your style preferences and confirm measurements, your custom order is generated with a unique tracking code.',
@@ -272,8 +277,9 @@ async function main() {
     },
   ];
 
-  for (const faq of faqs) {
-    await prisma.fAQ.create({ data: faq });
+    for (const faq of faqs) {
+      await prisma.fAQ.create({ data: faq });
+    }
   }
   console.log('✅ FAQs seeded.');
 
