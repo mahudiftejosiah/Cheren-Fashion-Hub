@@ -89,7 +89,7 @@ export function TrackOrderClient() {
     setConfirming(false);
 
     if (res.success) {
-      setConfirmMsg(res.message);
+      setConfirmMsg(res.message ?? 'Receipt confirmed successfully!');
       setOrderData({
         ...orderData,
         status: 'CUSTOMER_CONFIRMED',

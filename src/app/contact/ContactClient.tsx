@@ -36,7 +36,7 @@ export function ContactClient({ settings }: ContactClientProps) {
     setLoading(false);
 
     if (res.success) {
-      setSuccessMsg(res.message);
+      setSuccessMsg(res.message ?? 'Message sent successfully!');
       (e.target as HTMLFormElement).reset();
     } else {
       setErrorMsg(res.error || 'Failed to send message.');

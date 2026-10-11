@@ -24,7 +24,7 @@ export default function QuotePage() {
     setLoading(false);
 
     if (res.success) {
-      setSuccessMsg(res.message);
+      setSuccessMsg(res.message ?? 'Quote request submitted successfully!');
       (e.target as HTMLFormElement).reset();
     } else {
       setErrorMsg(res.error || 'Failed to submit quote request.');
