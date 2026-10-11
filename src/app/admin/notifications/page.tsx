@@ -1,6 +1,6 @@
 import React from 'react';
 import { prisma } from '@/lib/prisma';
-import { Bell, CheckCircle2, Clock } from 'lucide-react';
+import { Bell, CheckCircle2 } from 'lucide-react';
 import { markNotificationsAsRead } from '@/app/actions/admin';
 
 export const revalidate = 0;
@@ -9,6 +9,11 @@ export default async function AdminNotificationsPage() {
   const notifications = await prisma.notification.findMany({
     orderBy: { createdAt: 'desc' },
   });
+
+  async function markAllRead() {
+    'use server';
+    await markNotificationsAsRead();
+  }
 
   return (
     <div className="space-y-8">
@@ -22,7 +27,7 @@ export default async function AdminNotificationsPage() {
           </h1>
         </div>
 
-        <form action={markNotificationsAsRead}>
+        <form action={markAllRead}>
           <button
             type="submit"
             className="px-4 py-2.5 rounded-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-gold-400 text-xs font-bold uppercase tracking-wider transition-colors"
