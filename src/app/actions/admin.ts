@@ -91,26 +91,26 @@ export async function updateOrderStatusAction(orderId: string, newStatus: string
     const order = await prisma.order.findUnique({ where: { id: orderId } });
     if (!order) return { success: false, error: 'Order not found.' };
 
-    const updateData: any = {
-      status: newStatus,
-      history: {
-        create: {
-          status: newStatus,
-          note: note || `Status updated to ${newStatus} by admin.`,
-        },
-      },
-    };
+    const confirmedAt = newStatus === 'CUSTOMER_CONFIRMED' && !order.confirmedAt
+      ? new Date()
+      : undefined;
 
-    if (newStatus === 'CUSTOMER_CONFIRMED' && !order.confirmedAt) {
-      const confirmedAt = new Date();
-      updateData.confirmedAt = confirmedAt;
-      // Schedule auto-delete 24 hours after confirmation
-      updateData.deleteAt = new Date(confirmedAt.getTime() + 24 * 60 * 60 * 1000);
-    }
+    const deleteAt = confirmedAt
+      ? new Date(confirmedAt.getTime() + 24 * 60 * 60 * 1000)
+      : undefined;
 
     await prisma.order.update({
       where: { id: orderId },
-      data: updateData,
+      data: {
+        status: newStatus,
+        ...(confirmedAt ? { confirmedAt, deleteAt } : {}),
+        history: {
+          create: {
+            status: newStatus,
+            note: note || `Status updated to ${newStatus} by admin.`,
+          },
+        },
+      },
     });
 
     revalidatePath('/admin/orders');

@@ -41,7 +41,6 @@ interface OrderItem {
   confirmedAt: Date | null;
   internalNotes: string | null;
   createdAt: Date;
-  feedback?: any;
 }
 
 interface AdminOrdersClientProps {

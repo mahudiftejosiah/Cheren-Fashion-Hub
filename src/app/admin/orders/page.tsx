@@ -30,7 +30,6 @@ export default async function AdminOrdersPage() {
     confirmedAt: order.confirmedAt,
     internalNotes: order.internalNotes,
     createdAt: order.createdAt,
-    feedback: order.feedback,
   }));
 
   return (

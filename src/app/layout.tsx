@@ -4,7 +4,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import { PublicLayoutShell } from '@/components/PublicLayoutShell';
 import { getBusinessSettings } from '@/lib/getSettings';
 
-export async function generateMetadata(): Metadata {
+export async function generateMetadata(): Promise<Metadata> {
   const settings = await getBusinessSettings();
   return {
     title: {
