@@ -5,7 +5,7 @@ import { AdminCollectionsClient } from './AdminCollectionsClient';
 export const revalidate = 0;
 
 export default async function AdminCollectionsPage() {
-  const collections = await prisma.collection.findMany({
+  const raw = await prisma.collection.findMany({
     include: {
       fashionItems: {
         include: { media: true },
@@ -13,6 +13,29 @@ export default async function AdminCollectionsPage() {
     },
     orderBy: { createdAt: 'desc' },
   });
+
+  // Map Prisma result to the exact shape AdminCollectionsClient expects
+  const collections = raw.map((col) => ({
+    id: col.id,
+    title: col.title,
+    slug: col.slug,
+    category: col.category,
+    description: col.description,
+    coverImage: col.coverImage,
+    isFeatured: col.isFeatured,
+    fashionItems: col.fashionItems.map((item) => ({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      category: item.category,
+      tags: item.tags,
+      isFeatured: item.isFeatured,
+      media: item.media.map((m) => ({
+        id: m.id,
+        url: m.url,
+      })),
+    })),
+  }));
 
   return (
     <div className="space-y-8">
