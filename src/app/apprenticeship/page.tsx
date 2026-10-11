@@ -20,7 +20,7 @@ export default function ApprenticeshipPage() {
     setLoading(false);
 
     if (res.success) {
-      setSuccessMsg(res.message);
+      setSuccessMsg(res.message ?? 'Application submitted successfully!');
       (e.target as HTMLFormElement).reset();
     } else {
       setErrorMsg(res.error || 'Application submission failed.');
