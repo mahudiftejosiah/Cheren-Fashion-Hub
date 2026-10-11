@@ -371,16 +371,15 @@ export async function updateBusinessSettingsAction(formData: FormData) {
 }
 
 // --- NOTIFICATIONS ---
-export async function markNotificationsAsRead() {
+export async function markNotificationsAsRead(): Promise<void> {
   try {
     await prisma.notification.updateMany({
       where: { isRead: false },
       data: { isRead: true },
     });
     revalidatePath('/admin', 'layout');
-    return { success: true };
   } catch (err) {
-    return { success: false };
+    console.error('Error marking notifications as read:', err);
   }
 }
 
