@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { AdminCollectionsClient } from './AdminCollectionsClient';
 
 export const revalidate = 0;
+// v2 — explicit Prisma mapping to fix Vercel build type errors
 
 export default async function AdminCollectionsPage() {
   const raw = await prisma.collection.findMany({
