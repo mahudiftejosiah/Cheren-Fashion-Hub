@@ -22,7 +22,7 @@ export default async function AdminNotificationsPage() {
           </h1>
         </div>
 
-        <form action={markNotificationsAsRead}>
+        <form action={async () => { 'use server'; await markNotificationsAsRead(); }}>
           <button
             type="submit"
             className="px-4 py-2.5 rounded-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-gold-400 text-xs font-bold uppercase tracking-wider transition-colors"
