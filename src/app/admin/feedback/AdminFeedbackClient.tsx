@@ -6,6 +6,7 @@ import { moderateFeedback } from '@/app/actions/feedback';
 
 interface FeedbackItem {
   id: string;
+  orderId: string | null;
   customerName: string;
   rating: number;
   review: string;
@@ -13,7 +14,11 @@ interface FeedbackItem {
   isApproved: boolean;
   isFeatured: boolean;
   createdAt: Date;
-  order?: any;
+  order?: {
+    trackingNumber: string;
+    outfitTitle: string;
+    customerName: string;
+  } | null;
 }
 
 interface AdminFeedbackClientProps {
