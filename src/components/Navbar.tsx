@@ -31,6 +31,7 @@ export function Navbar({ settings }: NavbarProps) {
     { name: 'Gallery', href: '/gallery' },
     { name: 'Track Order', href: '/track-order' },
     { name: 'How It Works', href: '/how-it-works' },
+    { name: 'Apprenticeship', href: '/apprenticeship' },
     { name: 'FAQ', href: '/faq' },
     { name: 'Contact', href: '/contact' },
   ];

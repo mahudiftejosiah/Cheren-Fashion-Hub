@@ -117,6 +117,9 @@ export function Footer({ settings }: FooterProps) {
                 <Link href="/faq" className="hover:text-pink-400 transition-colors">Frequently Asked Questions</Link>
               </li>
               <li>
+                <Link href="/apprenticeship" className="hover:text-pink-400 transition-colors">Become an Apprentice</Link>
+              </li>
+              <li>
                 <Link href="/contact" className="hover:text-pink-400 transition-colors">Contact Studio</Link>
               </li>
             </ul>
