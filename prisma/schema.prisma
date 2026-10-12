@@ -108,7 +108,7 @@ model Video {
   videoUrl     String
   thumbnailUrl String
   category     String
-  isFeatured   Boolean  @default(false)
+  isFeatured   Boolean  @default(false)   
   createdAt    DateTime @default(now())
 }
 
@@ -126,18 +126,22 @@ model Feedback {
 }
 
 model ApprenticeshipApplication {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   fullName        String
   phone           String
   email           String
   location        String
-  experienceLevel String   // Beginner, Intermediate, Advanced
+  experienceLevel String
   skillLevel      String
   motivation      String
   availability    String
-  status          String   @default("PENDING") // PENDING, REVIEWED, ACCEPTED, REJECTED
+  status          String    @default("PENDING") // PENDING, REVIEWED, ACCEPTED, REJECTED
   internalNotes   String?
-  createdAt       DateTime @default(now())
+  // Email notification tracking
+  emailStatus     String?   // null = not sent, SENT, FAILED
+  emailSentAt     DateTime?
+  emailError      String?
+  createdAt       DateTime  @default(now())
 }
 
 model QuoteRequest {
@@ -198,6 +202,20 @@ model Notification {
   linkUrl   String?
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model Certificate {
+  id           String   @id @default(uuid())
+  title        String
+  institution  String
+  dateObtained String
+  description  String?
+  fileUrl      String   // Cloudinary URL — image or PDF
+  fileType     String   @default("IMAGE") // IMAGE or PDF
+  isPublished  Boolean  @default(false)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model BusinessSettings {

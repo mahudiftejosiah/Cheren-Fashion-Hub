@@ -27,6 +27,7 @@ export function Navbar({ settings }: NavbarProps) {
 
   const navLinks = [
     { name: 'Home', href: '/' },
+    { name: 'About', href: '/about' },
     { name: 'Collections', href: '/collections' },
     { name: 'Gallery', href: '/gallery' },
     { name: 'Track Order', href: '/track-order' },
