@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, MailOpen, CheckCheck, X } from 'lucide-react';
-import { markMessageAsRead, markAllMessagesAsRead } from '@/app/actions/admin';
+import { Mail, MailOpen, CheckCheck, X, Trash2 } from 'lucide-react';
+import { markMessageAsRead, markAllMessagesAsRead, deleteMessageAction } from '@/app/actions/admin';
 
 interface MessageItem {
   id: string;
@@ -18,6 +18,7 @@ interface MessageItem {
 export function AdminMessagesClient({ initialMessages }: { initialMessages: MessageItem[] }) {
   const [messages, setMessages] = useState<MessageItem[]>(initialMessages);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [markingAll, setMarkingAll] = useState(false);
   const [filter, setFilter] = useState<'ALL' | 'UNREAD' | 'READ'>('ALL');
   const [selectedMsg, setSelectedMsg] = useState<MessageItem | null>(null);
@@ -46,6 +47,18 @@ export function AdminMessagesClient({ initialMessages }: { initialMessages: Mess
     if (res.success) {
       setMessages((prev) => prev.map((m) => ({ ...m, isRead: true })));
       showToast('All messages marked as read.');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this message? This cannot be undone.')) return;
+    setDeletingId(id);
+    const res = await deleteMessageAction(id);
+    setDeletingId(null);
+    if (res.success) {
+      setMessages((prev) => prev.filter((m) => m.id !== id));
+      if (selectedMsg?.id === id) setSelectedMsg(null);
+      showToast('Message deleted.');
     }
   };
 
@@ -155,16 +168,26 @@ export function AdminMessagesClient({ initialMessages }: { initialMessages: Mess
                 >
                   Read Full Message →
                 </button>
-                {!m.isRead && (
+                <div className="flex items-center gap-2">
+                  {!m.isRead && (
+                    <button
+                      onClick={() => handleMarkRead(m.id)}
+                      disabled={loadingId === m.id}
+                      className="px-3 py-1.5 rounded-lg bg-blue-500/15 border border-blue-500/30 text-blue-400 text-[10px] font-bold uppercase tracking-wider hover:bg-blue-500/25 transition-colors flex items-center gap-1 disabled:opacity-50"
+                    >
+                      <MailOpen className="w-3 h-3" />
+                      {loadingId === m.id ? '...' : 'Mark Read'}
+                    </button>
+                  )}
                   <button
-                    onClick={() => handleMarkRead(m.id)}
-                    disabled={loadingId === m.id}
-                    className="px-3 py-1.5 rounded-lg bg-blue-500/15 border border-blue-500/30 text-blue-400 text-[10px] font-bold uppercase tracking-wider hover:bg-blue-500/25 transition-colors flex items-center gap-1 disabled:opacity-50"
+                    onClick={() => handleDelete(m.id)}
+                    disabled={deletingId === m.id}
+                    className="px-3 py-1.5 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-400 text-[10px] font-bold uppercase tracking-wider hover:bg-rose-500/25 transition-colors flex items-center gap-1 disabled:opacity-50"
                   >
-                    <MailOpen className="w-3 h-3" />
-                    {loadingId === m.id ? '...' : 'Mark Read'}
+                    <Trash2 className="w-3 h-3" />
+                    {deletingId === m.id ? '...' : 'Delete'}
                   </button>
-                )}
+                </div>
               </div>
             </div>
           ))

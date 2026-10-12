@@ -548,3 +548,67 @@ export async function markAllMessagesAsRead() {
     return { success: false, error: 'Failed to mark messages as read.' };
   }
 }
+
+// --- DELETE ACTIONS ---
+
+export async function deleteQuoteAction(id: string) {
+  try {
+    await prisma.quoteRequest.delete({ where: { id } });
+    revalidatePath('/admin/quotes');
+    return { success: true };
+  } catch (err) {
+    console.error('Error deleting quote:', err);
+    return { success: false, error: 'Failed to delete quote.' };
+  }
+}
+
+export async function deleteAppointmentAction(id: string) {
+  try {
+    await prisma.appointment.delete({ where: { id } });
+    revalidatePath('/admin/appointments');
+    return { success: true };
+  } catch (err) {
+    console.error('Error deleting appointment:', err);
+    return { success: false, error: 'Failed to delete appointment.' };
+  }
+}
+
+export async function deleteApprenticeshipAction(id: string) {
+  try {
+    await prisma.apprenticeshipApplication.delete({ where: { id } });
+    revalidatePath('/admin/apprenticeships');
+    return { success: true };
+  } catch (err) {
+    console.error('Error deleting apprenticeship application:', err);
+    return { success: false, error: 'Failed to delete application.' };
+  }
+}
+
+export async function deleteMessageAction(id: string) {
+  try {
+    await prisma.contactMessage.delete({ where: { id } });
+    revalidatePath('/admin/messages');
+    return { success: true };
+  } catch (err) {
+    console.error('Error deleting message:', err);
+    return { success: false, error: 'Failed to delete message.' };
+  }
+}
+
+export async function deleteNotificationAction(id: string): Promise<void> {
+  try {
+    await prisma.notification.delete({ where: { id } });
+    revalidatePath('/admin/notifications');
+  } catch (err) {
+    console.error('Error deleting notification:', err);
+  }
+}
+
+export async function deleteAllNotificationsAction(): Promise<void> {
+  try {
+    await prisma.notification.deleteMany({});
+    revalidatePath('/admin/notifications');
+  } catch (err) {
+    console.error('Error deleting all notifications:', err);
+  }
+}

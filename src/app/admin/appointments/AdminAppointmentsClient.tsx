@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { updateAppointmentStatusAction } from '@/app/actions/admin';
+import { updateAppointmentStatusAction, deleteAppointmentAction } from '@/app/actions/admin';
 
 interface AppointmentItem {
   id: string;
@@ -38,6 +38,7 @@ const NEXT_ACTIONS: Record<string, string[]> = {
 export function AdminAppointmentsClient({ initialAppointments }: { initialAppointments: AppointmentItem[] }) {
   const [appointments, setAppointments] = useState<AppointmentItem[]>(initialAppointments);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [filter, setFilter] = useState('ALL');
 
   const handleStatusChange = async (id: string, newStatus: string) => {
@@ -45,10 +46,16 @@ export function AdminAppointmentsClient({ initialAppointments }: { initialAppoin
     const res = await updateAppointmentStatusAction(id, newStatus);
     setLoadingId(null);
     if (res.success) {
-      setAppointments((prev) =>
-        prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a))
-      );
+      setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a)));
     }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this appointment? This cannot be undone.')) return;
+    setDeletingId(id);
+    const res = await deleteAppointmentAction(id);
+    setDeletingId(null);
+    if (res.success) setAppointments((prev) => prev.filter((a) => a.id !== id));
   };
 
   const filtered = filter === 'ALL' ? appointments : appointments.filter((a) => a.status === filter);
@@ -90,6 +97,7 @@ export function AdminAppointmentsClient({ initialAppointments }: { initialAppoin
                 <th className="p-4">Service</th>
                 <th className="p-4">Status</th>
                 <th className="p-4">Actions</th>
+                <th className="p-4">Delete</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800 text-zinc-300">
@@ -134,6 +142,15 @@ export function AdminAppointmentsClient({ initialAppointments }: { initialAppoin
                         )}
                       </div>
                     </td>
+                    <td className="p-4">
+                      <button
+                        disabled={deletingId === app.id}
+                        onClick={() => handleDelete(app.id)}
+                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-colors disabled:opacity-50 bg-rose-500/15 border-rose-500/30 text-rose-400 hover:bg-rose-500/25"
+                      >
+                        {deletingId === app.id ? '...' : 'Delete'}
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -173,6 +190,13 @@ export function AdminAppointmentsClient({ initialAppointments }: { initialAppoin
                   {(NEXT_ACTIONS[app.status] ?? []).length === 0 && (
                     <span className="text-zinc-600 text-[10px] italic">No actions</span>
                   )}
+                  <button
+                    disabled={deletingId === app.id}
+                    onClick={() => handleDelete(app.id)}
+                    className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-colors disabled:opacity-50 bg-rose-500/15 border-rose-500/30 text-rose-400 hover:bg-rose-500/25"
+                  >
+                    {deletingId === app.id ? '...' : 'Delete'}
+                  </button>
                 </div>
               </div>
             ))

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MapPin, X, CheckCircle2, XCircle, Eye } from 'lucide-react';
-import { updateApprenticeshipStatusAction } from '@/app/actions/admin';
+import { MapPin, X, CheckCircle2, Eye, Trash2 } from 'lucide-react';
+import { updateApprenticeshipStatusAction, deleteApprenticeshipAction } from '@/app/actions/admin';
 
 interface ApplicationItem {
   id: string;
@@ -37,6 +37,7 @@ export function AdminApprenticeshipsClient({ initialApps }: { initialApps: Appli
   const [apps, setApps] = useState<ApplicationItem[]>(initialApps);
   const [selectedApp, setSelectedApp] = useState<ApplicationItem | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [filter, setFilter] = useState('ALL');
   const [toast, setToast] = useState<string | null>(null);
 
@@ -51,9 +52,20 @@ export function AdminApprenticeshipsClient({ initialApps }: { initialApps: Appli
     setLoadingId(null);
     if (res.success) {
       setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a)));
-      // Also update selectedApp if it's currently open
       if (selectedApp?.id === id) setSelectedApp((prev) => prev ? { ...prev, status: newStatus } : prev);
       showToast(`Application marked as ${newStatus.toLowerCase()}.`);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this application? This cannot be undone.')) return;
+    setDeletingId(id);
+    const res = await deleteApprenticeshipAction(id);
+    setDeletingId(null);
+    if (res.success) {
+      setApps((prev) => prev.filter((a) => a.id !== id));
+      if (selectedApp?.id === id) setSelectedApp(null);
+      showToast('Application deleted.');
     }
   };
 
@@ -134,7 +146,6 @@ export function AdminApprenticeshipsClient({ initialApps }: { initialApps: Appli
 
               {/* Action buttons */}
               <div className="pt-3 border-t border-zinc-800 space-y-2 mt-auto">
-                {/* View details */}
                 <button
                   onClick={() => setSelectedApp(app)}
                   className="w-full py-2 rounded-xl border border-zinc-700 text-xs font-bold text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center justify-center gap-1.5 transition-colors"
@@ -142,7 +153,6 @@ export function AdminApprenticeshipsClient({ initialApps }: { initialApps: Appli
                   <Eye className="w-3.5 h-3.5" /> View Details
                 </button>
 
-                {/* Status transitions */}
                 <div className="flex flex-wrap gap-1.5">
                   {(NEXT_ACTIONS[app.status] ?? []).map((nextStatus) => (
                     <button
@@ -154,6 +164,14 @@ export function AdminApprenticeshipsClient({ initialApps }: { initialApps: Appli
                       {loadingId === app.id ? '...' : nextStatus}
                     </button>
                   ))}
+                  <button
+                    disabled={deletingId === app.id}
+                    onClick={() => handleDelete(app.id)}
+                    className="flex-1 py-2 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-colors disabled:opacity-50 bg-rose-500/15 border-rose-500/30 text-rose-400 hover:bg-rose-500/25 flex items-center justify-center gap-1"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    {deletingId === app.id ? '...' : 'Delete'}
+                  </button>
                 </div>
               </div>
             </div>

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ExternalLink, ChevronDown } from 'lucide-react';
-import { updateQuoteStatusAction } from '@/app/actions/admin';
+import { ExternalLink } from 'lucide-react';
+import { updateQuoteStatusAction, deleteQuoteAction } from '@/app/actions/admin';
 
 interface QuoteItem {
   id: string;
@@ -30,16 +30,23 @@ const STATUS_STYLES: Record<string, string> = {
 export function AdminQuotesClient({ initialQuotes }: { initialQuotes: QuoteItem[] }) {
   const [quotes, setQuotes] = useState<QuoteItem[]>(initialQuotes);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleStatusChange = async (quoteId: string, newStatus: string) => {
     setLoadingId(quoteId);
     const res = await updateQuoteStatusAction(quoteId, newStatus);
     setLoadingId(null);
     if (res.success) {
-      setQuotes((prev) =>
-        prev.map((q) => (q.id === quoteId ? { ...q, status: newStatus } : q))
-      );
+      setQuotes((prev) => prev.map((q) => (q.id === quoteId ? { ...q, status: newStatus } : q)));
     }
+  };
+
+  const handleDelete = async (quoteId: string) => {
+    if (!confirm('Delete this quote request? This cannot be undone.')) return;
+    setDeletingId(quoteId);
+    const res = await deleteQuoteAction(quoteId);
+    setDeletingId(null);
+    if (res.success) setQuotes((prev) => prev.filter((q) => q.id !== quoteId));
   };
 
   return (
@@ -125,6 +132,13 @@ export function AdminQuotesClient({ initialQuotes }: { initialQuotes: QuoteItem[
                       {loadingId === q.id ? '...' : s.replace(/_/g, ' ')}
                     </button>
                   ))}
+                  <button
+                    disabled={deletingId === q.id}
+                    onClick={() => handleDelete(q.id)}
+                    className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-colors disabled:opacity-50 bg-rose-500/15 border-rose-500/30 text-rose-400 hover:bg-rose-500/25"
+                  >
+                    {deletingId === q.id ? '...' : 'Delete'}
+                  </button>
                 </div>
               </div>
             </div>
