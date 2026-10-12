@@ -210,11 +210,23 @@ export async function createFashionItemAction(formData: FormData) {
   const description = formData.get('description') as string;
   const category = formData.get('category') as string;
   const tags = (formData.get('tags') as string) || '';
-  const imageUrl = formData.get('imageUrl') as string;
   const isFeatured = formData.get('isFeatured') === 'true';
 
-  if (!collectionId || !title || !description || !imageUrl) {
-    return { success: false, error: 'Please provide title, description, image URL, and select a collection.' };
+  // Collect multiple image URLs: imageUrl_0, imageUrl_1 … imageUrl_count-1
+  const count = parseInt((formData.get('imageUrl_count') as string) || '0', 10);
+  const imageUrls: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const u = (formData.get(`imageUrl_${i}`) as string | null)?.trim();
+    if (u) imageUrls.push(u);
+  }
+  // Fallback: single imageUrl field (backwards compat)
+  if (imageUrls.length === 0) {
+    const single = (formData.get('imageUrl') as string | null)?.trim();
+    if (single) imageUrls.push(single);
+  }
+
+  if (!collectionId || !title || !description || imageUrls.length === 0) {
+    return { success: false, error: 'Please provide title, description, at least one image, and select a collection.' };
   }
 
   try {
@@ -227,11 +239,11 @@ export async function createFashionItemAction(formData: FormData) {
         tags: tags.trim(),
         isFeatured,
         media: {
-          create: {
-            url: imageUrl.trim(),
+          create: imageUrls.map((url, idx) => ({
+            url,
             mediaType: 'IMAGE',
-            altText: title.trim(),
-          },
+            altText: `${title.trim()} - photo ${idx + 1}`,
+          })),
         },
       },
     });
@@ -252,7 +264,19 @@ export async function updateFashionItemAction(formData: FormData) {
   const description = formData.get('description') as string;
   const category = formData.get('category') as string;
   const tags = (formData.get('tags') as string) || '';
-  const imageUrl = formData.get('imageUrl') as string;
+
+  // Collect multiple image URLs
+  const count = parseInt((formData.get('imageUrl_count') as string) || '0', 10);
+  const imageUrls: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const u = (formData.get(`imageUrl_${i}`) as string | null)?.trim();
+    if (u) imageUrls.push(u);
+  }
+  // Fallback: single imageUrl field (backwards compat)
+  if (imageUrls.length === 0) {
+    const single = (formData.get('imageUrl') as string | null)?.trim();
+    if (single) imageUrls.push(single);
+  }
 
   if (!itemId || !title || !description) {
     return { success: false, error: 'Please fill in required fields.' };
@@ -269,23 +293,17 @@ export async function updateFashionItemAction(formData: FormData) {
       },
     });
 
-    if (imageUrl) {
-      const existingMedia = await prisma.media.findFirst({ where: { fashionItemId: itemId } });
-      if (existingMedia) {
-        await prisma.media.update({
-          where: { id: existingMedia.id },
-          data: { url: imageUrl.trim() },
-        });
-      } else {
-        await prisma.media.create({
-          data: {
-            fashionItemId: itemId,
-            url: imageUrl.trim(),
-            mediaType: 'IMAGE',
-            altText: title.trim(),
-          },
-        });
-      }
+    // Replace all media with the new set if any images were provided
+    if (imageUrls.length > 0) {
+      await prisma.media.deleteMany({ where: { fashionItemId: itemId } });
+      await prisma.media.createMany({
+        data: imageUrls.map((url, idx) => ({
+          fashionItemId: itemId,
+          url,
+          mediaType: 'IMAGE',
+          altText: `${title.trim()} - photo ${idx + 1}`,
+        })),
+      });
     }
 
     revalidatePath('/collections');

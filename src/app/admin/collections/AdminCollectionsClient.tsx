@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Plus, Trash2, Edit3, X, Layers, Image as ImageIcon, CheckCircle2, Loader2 } from 'lucide-react';
 import { createCollectionAction, updateCollectionAction, deleteCollectionAction, createFashionItemAction, updateFashionItemAction, deleteFashionItemAction } from '@/app/actions/admin';
 import { ImagePicker } from './ImagePicker';
+import { MultiImagePicker } from './MultiImagePicker';
 
 interface MediaItem { id: string; url: string; }
 interface FashionItemData { id: string; title: string; description: string; category: string; tags: string | null; isFeatured: boolean; media: MediaItem[]; }
@@ -121,7 +122,19 @@ export function AdminCollectionsClient({ initialCollections }: { initialCollecti
                       <button onClick={()=>{setErr(null);setEim(item);}} className="p-1 rounded-full bg-zinc-950/80 text-gold-400 hover:bg-gold-500 hover:text-zinc-950 transition-colors"><Edit3 className="w-3.5 h-3.5"/></button>
                       <button onClick={()=>delItem(item.id)} className="p-1 rounded-full bg-rose-500/80 text-white hover:bg-rose-600 transition-colors"><Trash2 className="w-3.5 h-3.5"/></button>
                     </div>
+                    {item.media.length > 1 && (
+                      <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-zinc-950/80 text-[9px] text-zinc-300 font-bold">
+                        {item.media.length} photos
+                      </div>
+                    )}
                   </div>
+                  {item.media.length > 1 && (
+                    <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
+                      {item.media.slice(0,5).map((m,i)=>(
+                        <img key={m.id} src={m.url} alt={`${item.title} ${i+1}`} className="w-10 h-10 rounded-lg object-cover shrink-0 border border-zinc-700"/>
+                      ))}
+                    </div>
+                  )}
                   <h4 className="font-fashion-serif text-sm font-bold text-white line-clamp-1">{item.title}</h4>
                   <p className="text-zinc-400 text-[11px] line-clamp-2 mt-1">{item.description}</p>
                 </div>
@@ -195,7 +208,7 @@ export function AdminCollectionsClient({ initialCollections }: { initialCollecti
                 </select>
               </div>
               <div><label className={LC}>Photo Title *</label><input type="text" name="title" required placeholder="e.g. Navy Velvet Blazer Front View" className={IC}/></div>
-              <ImagePicker label="Photo Image" fieldName="imageUrl" required/>
+              <MultiImagePicker fieldPrefix="imageUrl" maxImages={8}/>
               <div><label className={LC}>Description *</label><textarea name="description" required rows={2} placeholder="Stitching, fabric, embellishment details..." className={IC}/></div>
               <div><label className={LC}>Category Tag</label><input type="text" name="category" placeholder="e.g. Velvet, Agbada, Tuxedo" className={IC}/></div>
               <Btn label="Save Gallery Photo"/>
@@ -214,7 +227,7 @@ export function AdminCollectionsClient({ initialCollections }: { initialCollecti
             <form onSubmit={e=>run(updateFashionItemAction,e,()=>{setEim(null);window.location.reload();},'Failed to update photo.')} className="space-y-4">
               <input type="hidden" name="id" value={eim.id}/>
               <div><label className={LC}>Photo Title *</label><input type="text" name="title" required defaultValue={eim.title} className={IC}/></div>
-              <ImagePicker label="Photo Image" fieldName="imageUrl" defaultUrl={eim.media[0]?.url||''}/>
+              <MultiImagePicker fieldPrefix="imageUrl" defaultUrls={eim.media.map(m=>m.url)} maxImages={8}/>
               <div><label className={LC}>Description *</label><textarea name="description" required rows={2} defaultValue={eim.description} className={IC}/></div>
               <div><label className={LC}>Category Tag</label><input type="text" name="category" defaultValue={eim.category} className={IC}/></div>
               <Btn label="Save Photo Updates"/>
