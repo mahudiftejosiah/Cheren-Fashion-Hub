@@ -1,16 +1,19 @@
 import React from 'react';
 import Link from 'next/link';
-import { 
-  Scissors, 
-  Award, 
-  Target, 
-  Eye, 
-  Heart, 
-  CheckCircle2, 
-  MapPin, 
-  Calendar 
+import {
+  Scissors,
+  Award,
+  Target,
+  Eye,
+  Heart,
+  CheckCircle2,
+  MapPin,
+  Calendar,
+  ExternalLink,
+  Download,
 } from 'lucide-react';
 import { getBusinessSettings } from '@/lib/getSettings';
+import { prisma } from '@/lib/prisma';
 
 export const metadata = {
   title: 'About Our Brand & Designer',
@@ -19,6 +22,12 @@ export const metadata = {
 
 export default async function AboutPage() {
   const settings = await getBusinessSettings();
+
+  // Fetch published certificates ordered by displayOrder
+  const certificates = await prisma.certificate.findMany({
+    where: { isPublished: true },
+    orderBy: [{ displayOrder: 'asc' }, { createdAt: 'desc' }],
+  });
 
   const values = [
     {
@@ -174,6 +183,91 @@ export default async function AboutPage() {
             );
           })}
         </div>
+      </section>
+
+      {/* Certificates & Qualifications */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <h2 className="text-xs font-bold text-gold-500 uppercase tracking-widest mb-2">Credentials</h2>
+          <h3 className="font-fashion-serif text-3xl font-bold text-zinc-900 dark:text-white">
+            Certificates &amp; Qualifications
+          </h3>
+          <p className="mt-3 text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed">
+            Professionally trained and formally certified in fashion design, pattern making, and garment construction.
+          </p>
+        </div>
+
+        {certificates.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 rounded-3xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-3">
+            <Award className="w-10 h-10 text-zinc-300 dark:text-zinc-600" />
+            <p className="text-zinc-400 dark:text-zinc-500 text-sm">No certificates have been published yet.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {certificates.map((cert) => (
+              <div
+                key={cert.id}
+                className="group rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-xl hover:border-gold-400/50 transition-all duration-300 overflow-hidden flex flex-col"
+              >
+                {/* Certificate preview */}
+                <div className="relative h-52 bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center overflow-hidden">
+                  {cert.fileType === 'PDF' ? (
+                    <div className="flex flex-col items-center gap-3 text-zinc-400 dark:text-zinc-500">
+                      <Award className="w-14 h-14 text-gold-400" />
+                      <span className="text-[11px] font-bold uppercase tracking-wider">PDF Certificate</span>
+                    </div>
+                  ) : (
+                    <img
+                      src={cert.fileUrl}
+                      alt={cert.title}
+                      className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-500"
+                    />
+                  )}
+                  {/* Gold overlay shimmer on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                </div>
+
+                {/* Info */}
+                <div className="p-5 flex-grow space-y-1.5">
+                  <h4 className="font-fashion-serif text-base font-bold text-zinc-900 dark:text-white leading-snug">
+                    {cert.title}
+                  </h4>
+                  <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">{cert.institution}</p>
+                  <div className="flex items-center gap-1.5 text-[11px] text-gold-600 dark:text-gold-400 font-bold">
+                    <Calendar className="w-3.5 h-3.5 shrink-0" />
+                    <span>{cert.dateObtained}</span>
+                  </div>
+                  {cert.description && (
+                    <p className="text-xs text-zinc-500 dark:text-zinc-500 leading-relaxed pt-1 line-clamp-2">
+                      {cert.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="px-5 pb-5 flex gap-2">
+                  <a
+                    href={cert.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    View
+                  </a>
+                  <a
+                    href={cert.fileUrl}
+                    download
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-gold-400/40 bg-gold-500/5 text-[11px] font-bold uppercase tracking-wider text-gold-600 dark:text-gold-400 hover:bg-gold-500/15 hover:border-gold-400/70 transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Studio Location & CTA */}

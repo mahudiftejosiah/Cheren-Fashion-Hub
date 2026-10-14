@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { sendOrderConfirmationEmail } from '@/lib/email';
+import { sendOrderConfirmationEmail, sendApprenticeshipAcceptanceEmail, sendApprenticeshipRejectionEmail } from '@/lib/email';
 
 // --- ORDERS ---
 export async function createAdminOrder(formData: FormData) {
@@ -212,20 +212,21 @@ export async function createFashionItemAction(formData: FormData) {
   const tags = (formData.get('tags') as string) || '';
   const isFeatured = formData.get('isFeatured') === 'true';
 
-  // Collect multiple image URLs: imageUrl_0, imageUrl_1 … imageUrl_count-1
+  // Collect multiple media URLs + their types: imageUrl_0/imageUrl_type_0 …
   const count = parseInt((formData.get('imageUrl_count') as string) || '0', 10);
-  const imageUrls: string[] = [];
+  const mediaItems: { url: string; mediaType: string }[] = [];
   for (let i = 0; i < count; i++) {
     const u = (formData.get(`imageUrl_${i}`) as string | null)?.trim();
-    if (u) imageUrls.push(u);
+    const t = (formData.get(`imageUrl_type_${i}`) as string | null)?.trim() || 'IMAGE';
+    if (u) mediaItems.push({ url: u, mediaType: t });
   }
   // Fallback: single imageUrl field (backwards compat)
-  if (imageUrls.length === 0) {
+  if (mediaItems.length === 0) {
     const single = (formData.get('imageUrl') as string | null)?.trim();
-    if (single) imageUrls.push(single);
+    if (single) mediaItems.push({ url: single, mediaType: 'IMAGE' });
   }
 
-  if (!collectionId || !title || !description || imageUrls.length === 0) {
+  if (!collectionId || !title || !description || mediaItems.length === 0) {
     return { success: false, error: 'Please provide title, description, at least one image, and select a collection.' };
   }
 
@@ -239,10 +240,10 @@ export async function createFashionItemAction(formData: FormData) {
         tags: tags.trim(),
         isFeatured,
         media: {
-          create: imageUrls.map((url, idx) => ({
+          create: mediaItems.map(({ url, mediaType }, idx) => ({
             url,
-            mediaType: 'IMAGE',
-            altText: `${title.trim()} - photo ${idx + 1}`,
+            mediaType,
+            altText: `${title.trim()} - media ${idx + 1}`,
           })),
         },
       },
@@ -265,17 +266,18 @@ export async function updateFashionItemAction(formData: FormData) {
   const category = formData.get('category') as string;
   const tags = (formData.get('tags') as string) || '';
 
-  // Collect multiple image URLs
+  // Collect multiple media URLs + their types
   const count = parseInt((formData.get('imageUrl_count') as string) || '0', 10);
-  const imageUrls: string[] = [];
+  const mediaItems: { url: string; mediaType: string }[] = [];
   for (let i = 0; i < count; i++) {
     const u = (formData.get(`imageUrl_${i}`) as string | null)?.trim();
-    if (u) imageUrls.push(u);
+    const t = (formData.get(`imageUrl_type_${i}`) as string | null)?.trim() || 'IMAGE';
+    if (u) mediaItems.push({ url: u, mediaType: t });
   }
   // Fallback: single imageUrl field (backwards compat)
-  if (imageUrls.length === 0) {
+  if (mediaItems.length === 0) {
     const single = (formData.get('imageUrl') as string | null)?.trim();
-    if (single) imageUrls.push(single);
+    if (single) mediaItems.push({ url: single, mediaType: 'IMAGE' });
   }
 
   if (!itemId || !title || !description) {
@@ -293,15 +295,15 @@ export async function updateFashionItemAction(formData: FormData) {
       },
     });
 
-    // Replace all media with the new set if any images were provided
-    if (imageUrls.length > 0) {
+    // Replace all media with the new set if any items were provided
+    if (mediaItems.length > 0) {
       await prisma.media.deleteMany({ where: { fashionItemId: itemId } });
       await prisma.media.createMany({
-        data: imageUrls.map((url, idx) => ({
+        data: mediaItems.map(({ url, mediaType }, idx) => ({
           fashionItemId: itemId,
           url,
-          mediaType: 'IMAGE',
-          altText: `${title.trim()} - photo ${idx + 1}`,
+          mediaType,
+          altText: `${title.trim()} - media ${idx + 1}`,
         })),
       });
     }
@@ -507,6 +509,11 @@ export async function updateAppointmentStatusAction(appointmentId: string, statu
 // --- APPRENTICESHIPS STATUS ---
 export async function updateApprenticeshipStatusAction(appId: string, status: string, notes?: string) {
   try {
+    // Fetch the application first so we have the email + name for acceptance emails
+    const app = await prisma.apprenticeshipApplication.findUnique({ where: { id: appId } });
+    if (!app) return { success: false, error: 'Application not found.' };
+
+    // Update status in DB first — this must succeed regardless of email outcome
     await prisma.apprenticeshipApplication.update({
       where: { id: appId },
       data: {
@@ -514,8 +521,42 @@ export async function updateApprenticeshipStatusAction(appId: string, status: st
         ...(notes !== undefined ? { internalNotes: notes } : {}),
       },
     });
+
+    let emailResult: { success: boolean; messageId?: string; error?: string } | null = null;
+
+    // Send acceptance email immediately after DB update succeeds
+    if (status === 'ACCEPTED') {
+      // Guard: don't resend if already successfully sent
+      if (app.emailStatus === 'SENT') {
+        revalidatePath('/admin/apprenticeships');
+        return { success: true, emailStatus: 'SENT', emailAlreadySent: true };
+      }
+
+      emailResult = await sendApprenticeshipAcceptanceEmail({
+        applicantName: app.fullName,
+        applicantEmail: app.email,
+        experienceLevel: app.experienceLevel,
+        availability: app.availability,
+        additionalInstructions: notes || app.internalNotes,
+      });
+
+      // Record email outcome — non-fatal whether it succeeds or fails
+      await prisma.apprenticeshipApplication.update({
+        where: { id: appId },
+        data: {
+          emailStatus: emailResult.success ? 'SENT' : 'FAILED',
+          emailSentAt: emailResult.success ? new Date() : null,
+          emailError: emailResult.success ? null : (emailResult.error ?? 'Unknown error'),
+        },
+      });
+    }
+
     revalidatePath('/admin/apprenticeships');
-    return { success: true };
+    return {
+      success: true,
+      emailStatus: emailResult?.success ? 'SENT' : emailResult ? 'FAILED' : null,
+      emailError: emailResult?.error ?? null,
+    };
   } catch (err) {
     console.error('Error updating apprenticeship status:', err);
     return { success: false, error: 'Failed to update status.' };
@@ -610,5 +651,128 @@ export async function deleteAllNotificationsAction(): Promise<void> {
     revalidatePath('/admin/notifications');
   } catch (err) {
     console.error('Error deleting all notifications:', err);
+  }
+}
+
+// --- RESEND ACCEPTANCE EMAIL ---
+export async function resendAcceptanceEmailAction(appId: string) {
+  try {
+    const app = await prisma.apprenticeshipApplication.findUnique({ where: { id: appId } });
+    if (!app) return { success: false, error: 'Application not found.' };
+    if (app.status !== 'ACCEPTED') return { success: false, error: 'Application must be accepted before sending email.' };
+    if (!app.email || !app.email.includes('@')) return { success: false, error: 'Applicant email address is missing or invalid.' };
+
+    // Prevent duplicate sends if already sent successfully
+    if (app.emailStatus === 'SENT') return { success: false, error: 'Acceptance email was already sent successfully. Duplicate not sent.' };
+
+    const result = await sendApprenticeshipAcceptanceEmail({
+      applicantName: app.fullName,
+      applicantEmail: app.email,
+      experienceLevel: app.experienceLevel,
+      availability: app.availability,
+      additionalInstructions: app.internalNotes,
+    });
+
+    await prisma.apprenticeshipApplication.update({
+      where: { id: appId },
+      data: {
+        emailStatus: result.success ? 'SENT' : 'FAILED',
+        emailSentAt: result.success ? new Date() : null,
+        emailError: result.success ? null : (result.error ?? 'Unknown error'),
+      },
+    });
+
+    revalidatePath('/admin/apprenticeships');
+    return {
+      success: result.success,
+      error: result.success ? undefined : result.error,
+    };
+  } catch (err) {
+    console.error('Error resending acceptance email:', err);
+    return { success: false, error: 'Failed to resend email.' };
+  }
+}
+
+// --- CERTIFICATE CRUD ---
+export async function createCertificateAction(formData: FormData) {
+  const title = (formData.get('title') as string)?.trim();
+  const institution = (formData.get('institution') as string)?.trim();
+  const dateObtained = (formData.get('dateObtained') as string)?.trim();
+  const description = (formData.get('description') as string)?.trim() || null;
+  const fileUrl = (formData.get('fileUrl') as string)?.trim();
+  const fileType = (formData.get('fileType') as string)?.trim() || 'IMAGE';
+  const isPublished = formData.get('isPublished') === 'true';
+  const displayOrder = parseInt(formData.get('displayOrder') as string, 10) || 0;
+
+  if (!title || !institution || !dateObtained || !fileUrl) {
+    return { success: false, error: 'Title, institution, date, and file are required.' };
+  }
+
+  try {
+    await prisma.certificate.create({
+      data: { title, institution, dateObtained, description, fileUrl, fileType, isPublished, displayOrder },
+    });
+    revalidatePath('/about');
+    revalidatePath('/admin/certificates');
+    return { success: true };
+  } catch (err) {
+    console.error('Error creating certificate:', err);
+    return { success: false, error: 'Failed to save certificate.' };
+  }
+}
+
+export async function updateCertificateAction(formData: FormData) {
+  const id = (formData.get('id') as string)?.trim();
+  const title = (formData.get('title') as string)?.trim();
+  const institution = (formData.get('institution') as string)?.trim();
+  const dateObtained = (formData.get('dateObtained') as string)?.trim();
+  const description = (formData.get('description') as string)?.trim() || null;
+  const fileUrl = (formData.get('fileUrl') as string)?.trim();
+  const fileType = (formData.get('fileType') as string)?.trim() || 'IMAGE';
+  const isPublished = formData.get('isPublished') === 'true';
+  const displayOrder = parseInt(formData.get('displayOrder') as string, 10) || 0;
+
+  if (!id || !title || !institution || !dateObtained) {
+    return { success: false, error: 'All required fields must be filled.' };
+  }
+
+  try {
+    await prisma.certificate.update({
+      where: { id },
+      data: {
+        title, institution, dateObtained, description,
+        ...(fileUrl ? { fileUrl, fileType } : {}),
+        isPublished, displayOrder,
+      },
+    });
+    revalidatePath('/about');
+    revalidatePath('/admin/certificates');
+    return { success: true };
+  } catch (err) {
+    console.error('Error updating certificate:', err);
+    return { success: false, error: 'Failed to update certificate.' };
+  }
+}
+
+export async function deleteCertificateAction(id: string) {
+  try {
+    await prisma.certificate.delete({ where: { id } });
+    revalidatePath('/about');
+    revalidatePath('/admin/certificates');
+    return { success: true };
+  } catch (err) {
+    console.error('Error deleting certificate:', err);
+    return { success: false, error: 'Failed to delete certificate.' };
+  }
+}
+
+export async function toggleCertificatePublishAction(id: string, isPublished: boolean) {
+  try {
+    await prisma.certificate.update({ where: { id }, data: { isPublished } });
+    revalidatePath('/about');
+    revalidatePath('/admin/certificates');
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: 'Failed to update publish status.' };
   }
 }

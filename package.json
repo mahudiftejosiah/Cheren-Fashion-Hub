@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma db push && ts-node -P tsconfig.seed.json prisma/seed.ts && next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "db:seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts",
@@ -15,9 +15,9 @@
   },
   "dependencies": {
     "@prisma/client": "^5.21.1",
+    "@supabase/supabase-js": "^2.49.0",
     "@types/nodemailer": "^8.0.2",
     "bcryptjs": "^2.4.3",
-    "cloudinary": "^2.11.0",
     "clsx": "^2.1.1",
     "framer-motion": "^11.11.9",
     "jose": "^5.9.6",

@@ -3,23 +3,24 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  ShoppingBag, 
-  Users, 
-  Layers, 
-  Star, 
-  FileText, 
-  Calendar, 
-  GraduationCap, 
-  Mail, 
-  HelpCircle, 
-  Bell, 
-  Settings, 
-  LogOut, 
-  Scissors, 
-  Menu, 
-  X 
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  Users,
+  Layers,
+  Star,
+  FileText,
+  Calendar,
+  GraduationCap,
+  Mail,
+  HelpCircle,
+  Bell,
+  Settings,
+  LogOut,
+  Scissors,
+  Menu,
+  X,
+  Award,
 } from 'lucide-react';
 import { logoutAdminAction } from '@/app/actions/auth';
 
@@ -58,6 +59,7 @@ export function AdminSidebar({ unreadNotificationsCount }: AdminSidebarProps) {
     { name: 'Contact Messages', href: '/admin/messages', icon: Mail },
     { name: 'FAQ Manager', href: '/admin/faqs', icon: HelpCircle },
     { name: 'Notifications', href: '/admin/notifications', icon: Bell, badge: unreadNotificationsCount },
+    { name: 'Certificates', href: '/admin/certificates', icon: Award },
     { name: 'Website Settings', href: '/admin/settings', icon: Settings },
   ];
 

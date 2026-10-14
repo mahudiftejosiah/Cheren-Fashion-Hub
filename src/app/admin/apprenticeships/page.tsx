@@ -5,9 +5,28 @@ import { AdminApprenticeshipsClient } from './AdminApprenticeshipsClient';
 export const revalidate = 0;
 
 export default async function AdminApprenticeshipsPage() {
-  const applications = await prisma.apprenticeshipApplication.findMany({
+  const raw = await prisma.apprenticeshipApplication.findMany({
     orderBy: { createdAt: 'desc' },
   });
+
+  // Map to exact shape including new email tracking fields
+  const applications = raw.map((a) => ({
+    id: a.id,
+    fullName: a.fullName,
+    phone: a.phone,
+    email: a.email,
+    location: a.location,
+    experienceLevel: a.experienceLevel,
+    skillLevel: a.skillLevel,
+    motivation: a.motivation,
+    availability: a.availability,
+    status: a.status,
+    internalNotes: a.internalNotes,
+    emailStatus: a.emailStatus,
+    emailSentAt: a.emailSentAt,
+    emailError: a.emailError,
+    createdAt: a.createdAt,
+  }));
 
   return (
     <div className="space-y-8">

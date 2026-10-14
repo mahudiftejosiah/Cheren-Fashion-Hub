@@ -1,6 +1,7 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -210,7 +211,7 @@ model Certificate {
   institution  String
   dateObtained String
   description  String?
-  fileUrl      String   // Cloudinary URL — image or PDF
+  fileUrl      String   // Supabase Storage URL — image or PDF
   fileType     String   @default("IMAGE") // IMAGE or PDF
   isPublished  Boolean  @default(false)
   displayOrder Int      @default(0)

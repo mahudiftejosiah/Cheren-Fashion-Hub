@@ -17,13 +17,23 @@ export interface SettingsData {
   visionText: string;
 }
 
-// Real authoritative business details — always used as the base
-const REAL_DETAILS = {
+// Default fallback values — only used when the DB row doesn't exist yet.
+// Once saved via the admin settings page these values are no longer used.
+const DEFAULTS: SettingsData = {
+  businessName: 'CHEREN FASHION HUB',
+  tagline: 'Where Your Style Becomes Reality.',
+  logoUrl: null,
   phone: '+234 903 738 1538',
   email: 'mahudiftefreeman@gmail.com',
   whatsappNumber: '2349037381538',
   address: 'Shagari Phase1 Sabon Pegi, Opp. Yola Model School, Yola Town, Adamawa State',
   openingHours: 'Mon - Sat: 9:00 AM - 6:00 PM',
+  instagramUrl: 'https://instagram.com',
+  tiktokUrl: 'https://tiktok.com',
+  facebookUrl: 'https://facebook.com',
+  bioText: 'Bespoke tailoring and modern luxury fashion designs crafted with precision and passion.',
+  missionText: 'To empower individuals through elegant, custom-crafted apparel that reflects their unique style.',
+  visionText: 'To be the premier fashion and tailoring house celebrating heritage and contemporary design.',
 };
 
 export async function getBusinessSettings(): Promise<SettingsData> {
@@ -33,39 +43,29 @@ export async function getBusinessSettings(): Promise<SettingsData> {
     });
 
     if (settings) {
+      // Every field comes from the DB. Fallback to DEFAULTS only when the
+      // DB value is an empty string (shouldn't happen but guards against it).
       return {
-        businessName: settings.businessName || 'CHEREN FASHION HUB',
-        tagline: settings.tagline || 'Where Your Style Becomes Reality.',
-        logoUrl: settings.logoUrl,
-        // Always use real details — overrides whatever is in the DB
-        phone: REAL_DETAILS.phone,
-        email: REAL_DETAILS.email,
-        whatsappNumber: REAL_DETAILS.whatsappNumber,
-        address: REAL_DETAILS.address,
-        openingHours: REAL_DETAILS.openingHours,
-        instagramUrl: settings.instagramUrl || 'https://instagram.com',
-        tiktokUrl: settings.tiktokUrl || 'https://tiktok.com',
-        facebookUrl: settings.facebookUrl || 'https://facebook.com',
-        bioText: settings.bioText || 'Bespoke tailoring and modern luxury fashion designs crafted with precision and passion.',
-        missionText: settings.missionText || 'To empower individuals through elegant, custom-crafted apparel that reflects their unique style.',
-        visionText: settings.visionText || 'To be the premier fashion and tailoring house celebrating heritage and contemporary design.',
+        businessName:   settings.businessName   || DEFAULTS.businessName,
+        tagline:        settings.tagline        || DEFAULTS.tagline,
+        logoUrl:        settings.logoUrl        ?? DEFAULTS.logoUrl,
+        phone:          settings.phone          || DEFAULTS.phone,
+        email:          settings.email          || DEFAULTS.email,
+        whatsappNumber: settings.whatsappNumber || DEFAULTS.whatsappNumber,
+        address:        settings.address        || DEFAULTS.address,
+        openingHours:   settings.openingHours   || DEFAULTS.openingHours,
+        instagramUrl:   settings.instagramUrl   || DEFAULTS.instagramUrl,
+        tiktokUrl:      settings.tiktokUrl      || DEFAULTS.tiktokUrl,
+        facebookUrl:    settings.facebookUrl    || DEFAULTS.facebookUrl,
+        bioText:        settings.bioText        || DEFAULTS.bioText,
+        missionText:    settings.missionText    || DEFAULTS.missionText,
+        visionText:     settings.visionText     || DEFAULTS.visionText,
       };
     }
   } catch (err) {
     console.error('Failed to load settings from DB:', err);
   }
 
-  // Fallback if DB is unreachable or not yet seeded
-  return {
-    businessName: 'CHEREN FASHION HUB',
-    tagline: 'Where Your Style Becomes Reality.',
-    logoUrl: null,
-    ...REAL_DETAILS,
-    instagramUrl: 'https://instagram.com',
-    tiktokUrl: 'https://tiktok.com',
-    facebookUrl: 'https://facebook.com',
-    bioText: 'Bespoke tailoring and modern luxury fashion designs crafted with precision and passion.',
-    missionText: 'To empower individuals through elegant, custom-crafted apparel that reflects their unique style.',
-    visionText: 'To be the premier fashion and tailoring house celebrating heritage and contemporary design.',
-  };
+  // Fallback when DB is unreachable or the row hasn't been seeded yet
+  return DEFAULTS;
 }

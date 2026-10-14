@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Trash2, Edit3, X, Layers, Image as ImageIcon, CheckCircle2, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Edit3, X, Layers, Image as ImageIcon, CheckCircle2, Loader2, Film } from 'lucide-react';
 import { createCollectionAction, updateCollectionAction, deleteCollectionAction, createFashionItemAction, updateFashionItemAction, deleteFashionItemAction } from '@/app/actions/admin';
 import { ImagePicker } from './ImagePicker';
 import { MultiImagePicker } from './MultiImagePicker';
 
-interface MediaItem { id: string; url: string; }
+interface MediaItem { id: string; url: string; mediaType?: string; }
 interface FashionItemData { id: string; title: string; description: string; category: string; tags: string | null; isFeatured: boolean; media: MediaItem[]; }
 interface CollectionItem { id: string; title: string; slug: string; category: string; description: string; coverImage: string; isFeatured: boolean; fashionItems: FashionItemData[]; }
 
@@ -112,26 +112,52 @@ export function AdminCollectionsClient({ initialCollections }: { initialCollecti
       {tab==='gallery' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {collections.flatMap(c=>c.fashionItems).map(item=>{
-            const img = item.media[0]?.url||'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop';
+            const firstMedia = item.media[0];
+            const isVideo    = firstMedia?.mediaType === 'VIDEO';
+            const fallback   = 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop';
             return (
               <div key={item.id} className="rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden shadow-md p-4 flex flex-col justify-between group">
                 <div>
                   <div className="relative h-48 rounded-xl overflow-hidden bg-zinc-950 mb-3">
-                    <img src={img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+                    {isVideo ? (
+                      <video
+                        src={firstMedia.url}
+                        className="w-full h-full object-cover"
+                        muted playsInline
+                      />
+                    ) : (
+                      <img
+                        src={firstMedia?.url || fallback}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    )}
                     <div className="absolute top-2 right-2 flex space-x-1.5">
                       <button onClick={()=>{setErr(null);setEim(item);}} className="p-1 rounded-full bg-zinc-950/80 text-gold-400 hover:bg-gold-500 hover:text-zinc-950 transition-colors"><Edit3 className="w-3.5 h-3.5"/></button>
                       <button onClick={()=>delItem(item.id)} className="p-1 rounded-full bg-rose-500/80 text-white hover:bg-rose-600 transition-colors"><Trash2 className="w-3.5 h-3.5"/></button>
                     </div>
+                    {isVideo && (
+                      <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-zinc-950/80">
+                        <Film className="w-3 h-3 text-blue-400" />
+                        <span className="text-[9px] text-blue-400 font-bold">VIDEO</span>
+                      </div>
+                    )}
                     {item.media.length > 1 && (
-                      <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-zinc-950/80 text-[9px] text-zinc-300 font-bold">
-                        {item.media.length} photos
+                      <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-full bg-zinc-950/80 text-[9px] text-zinc-300 font-bold">
+                        {item.media.length} items
                       </div>
                     )}
                   </div>
                   {item.media.length > 1 && (
                     <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
                       {item.media.slice(0,5).map((m,i)=>(
-                        <img key={m.id} src={m.url} alt={`${item.title} ${i+1}`} className="w-10 h-10 rounded-lg object-cover shrink-0 border border-zinc-700"/>
+                        m.mediaType === 'VIDEO' ? (
+                          <div key={m.id} className="w-10 h-10 rounded-lg border border-zinc-700 bg-zinc-800 shrink-0 flex items-center justify-center">
+                            <Film className="w-4 h-4 text-blue-400" />
+                          </div>
+                        ) : (
+                          <img key={m.id} src={m.url} alt={`${item.title} ${i+1}`} className="w-10 h-10 rounded-lg object-cover shrink-0 border border-zinc-700"/>
+                        )
                       ))}
                     </div>
                   )}
@@ -208,7 +234,7 @@ export function AdminCollectionsClient({ initialCollections }: { initialCollecti
                 </select>
               </div>
               <div><label className={LC}>Photo Title *</label><input type="text" name="title" required placeholder="e.g. Navy Velvet Blazer Front View" className={IC}/></div>
-              <MultiImagePicker fieldPrefix="imageUrl" maxImages={8}/>
+              <MultiImagePicker fieldPrefix="imageUrl" maxItems={8}/>
               <div><label className={LC}>Description *</label><textarea name="description" required rows={2} placeholder="Stitching, fabric, embellishment details..." className={IC}/></div>
               <div><label className={LC}>Category Tag</label><input type="text" name="category" placeholder="e.g. Velvet, Agbada, Tuxedo" className={IC}/></div>
               <Btn label="Save Gallery Photo"/>
@@ -227,7 +253,7 @@ export function AdminCollectionsClient({ initialCollections }: { initialCollecti
             <form onSubmit={e=>run(updateFashionItemAction,e,()=>{setEim(null);window.location.reload();},'Failed to update photo.')} className="space-y-4">
               <input type="hidden" name="id" value={eim.id}/>
               <div><label className={LC}>Photo Title *</label><input type="text" name="title" required defaultValue={eim.title} className={IC}/></div>
-              <MultiImagePicker fieldPrefix="imageUrl" defaultUrls={eim.media.map(m=>m.url)} maxImages={8}/>
+              <MultiImagePicker fieldPrefix="imageUrl" defaultUrls={eim.media.map(m=>m.url)} defaultMediaTypes={eim.media.map(m=>m.mediaType||'IMAGE')} maxItems={8}/>
               <div><label className={LC}>Description *</label><textarea name="description" required rows={2} defaultValue={eim.description} className={IC}/></div>
               <div><label className={LC}>Category Tag</label><input type="text" name="category" defaultValue={eim.category} className={IC}/></div>
               <Btn label="Save Photo Updates"/>

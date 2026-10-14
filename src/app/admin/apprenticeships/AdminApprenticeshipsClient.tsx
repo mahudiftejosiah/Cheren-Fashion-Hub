@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MapPin, X, CheckCircle2, Eye, Trash2 } from 'lucide-react';
-import { updateApprenticeshipStatusAction, deleteApprenticeshipAction } from '@/app/actions/admin';
+import { MapPin, X, CheckCircle2, Eye, Trash2, Mail, RefreshCw, AlertCircle } from 'lucide-react';
+import { updateApprenticeshipStatusAction, deleteApprenticeshipAction, resendAcceptanceEmailAction } from '@/app/actions/admin';
 
 interface ApplicationItem {
   id: string;
@@ -16,6 +16,9 @@ interface ApplicationItem {
   availability: string;
   status: string;
   internalNotes: string | null;
+  emailStatus: string | null;
+  emailSentAt: Date | null;
+  emailError: string | null;
   createdAt: Date;
 }
 
@@ -38,12 +41,15 @@ export function AdminApprenticeshipsClient({ initialApps }: { initialApps: Appli
   const [selectedApp, setSelectedApp] = useState<ApplicationItem | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [resendingId, setResendingId] = useState<string | null>(null);
   const [filter, setFilter] = useState('ALL');
   const [toast, setToast] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
-  const showToast = (msg: string) => {
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast(msg);
-    setTimeout(() => setToast(null), 3000);
+    setToastType(type);
+    setTimeout(() => setToast(null), 4000);
   };
 
   const handleStatusChange = async (id: string, newStatus: string) => {
@@ -53,7 +59,35 @@ export function AdminApprenticeshipsClient({ initialApps }: { initialApps: Appli
     if (res.success) {
       setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a)));
       if (selectedApp?.id === id) setSelectedApp((prev) => prev ? { ...prev, status: newStatus } : prev);
-      showToast(`Application marked as ${newStatus.toLowerCase()}.`);
+      if (newStatus === 'ACCEPTED') {
+        if (res.emailStatus === 'SENT') {
+          showToast('Application accepted and confirmation email sent successfully.', 'success');
+          setApps((prev) => prev.map((a) => (a.id === id ? { ...a, emailStatus: 'SENT', emailSentAt: new Date(), emailError: null } : a)));
+        } else if (res.emailStatus === 'FAILED') {
+          showToast(`Application accepted but email failed: ${res.emailError || 'Unknown error'}. You can retry from the card.`, 'error');
+          setApps((prev) => prev.map((a) => (a.id === id ? { ...a, emailStatus: 'FAILED', emailError: res.emailError ?? null } : a)));
+        } else {
+          showToast('Application marked as accepted.', 'success');
+        }
+      } else {
+        showToast(`Application marked as ${newStatus.toLowerCase()}.`, 'success');
+      }
+    } else {
+      showToast(res.error || 'Failed to update status.', 'error');
+    }
+  };
+
+  const handleResendEmail = async (id: string) => {
+    if (!confirm('Resend the acceptance email to this applicant?')) return;
+    setResendingId(id);
+    const res = await resendAcceptanceEmailAction(id);
+    setResendingId(null);
+    if (res.success) {
+      showToast('Acceptance email resent successfully.', 'success');
+      setApps((prev) => prev.map((a) => (a.id === id ? { ...a, emailStatus: 'SENT', emailSentAt: new Date(), emailError: null } : a)));
+      if (selectedApp?.id === id) setSelectedApp((prev) => prev ? { ...prev, emailStatus: 'SENT', emailSentAt: new Date(), emailError: null } : prev);
+    } else {
+      showToast(res.error || 'Failed to resend email.', 'error');
     }
   };
 
@@ -77,8 +111,8 @@ export function AdminApprenticeshipsClient({ initialApps }: { initialApps: Appli
 
       {/* Toast */}
       {toast && (
-        <div className="fixed top-[73px] lg:top-6 right-4 lg:right-6 z-50 px-5 py-3 rounded-2xl bg-emerald-500 text-white text-xs font-bold shadow-2xl flex items-center space-x-2">
-          <CheckCircle2 className="w-4 h-4" />
+        <div className={`fixed top-[73px] lg:top-6 right-4 lg:right-6 z-50 px-5 py-3 rounded-2xl text-white text-xs font-bold shadow-2xl flex items-center space-x-2 ${toastType === 'error' ? 'bg-rose-500' : 'bg-emerald-500'}`}>
+          {toastType === 'error' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
           <span>{toast}</span>
         </div>
       )}
@@ -143,6 +177,38 @@ export function AdminApprenticeshipsClient({ initialApps }: { initialApps: Appli
                   {app.status}
                 </span>
               </div>
+
+              {/* Email status indicator */}
+              {app.status === 'ACCEPTED' && (
+                <div className={`flex items-center justify-between gap-2 p-2.5 rounded-xl border text-[10px] font-bold ${
+                  app.emailStatus === 'SENT'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                    : app.emailStatus === 'FAILED'
+                    ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                    : 'bg-zinc-800 border-zinc-700 text-zinc-500'
+                }`}>
+                  <div className="flex items-center gap-1.5">
+                    <Mail className="w-3 h-3" />
+                    <span>
+                      {app.emailStatus === 'SENT'
+                        ? `Email sent${app.emailSentAt ? ' · ' + new Date(app.emailSentAt).toLocaleDateString() : ''}`
+                        : app.emailStatus === 'FAILED'
+                        ? 'Email failed'
+                        : 'Email not sent'}
+                    </span>
+                  </div>
+                  {app.emailStatus !== 'SENT' && (
+                    <button
+                      disabled={resendingId === app.id}
+                      onClick={() => handleResendEmail(app.id)}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 transition-colors disabled:opacity-50"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${resendingId === app.id ? 'animate-spin' : ''}`} />
+                      {resendingId === app.id ? 'Sending...' : 'Resend'}
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* Action buttons */}
               <div className="pt-3 border-t border-zinc-800 space-y-2 mt-auto">
@@ -237,6 +303,52 @@ export function AdminApprenticeshipsClient({ initialApps }: { initialApps: Appli
                 )}
               </div>
             </div>
+
+            {/* Email status inside modal */}
+            {selectedApp.status === 'ACCEPTED' && (
+              <div className="pt-4 border-t border-zinc-800">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-3">Email Notification</span>
+                <div className={`flex items-center justify-between gap-3 p-3 rounded-xl border text-xs font-bold ${
+                  selectedApp.emailStatus === 'SENT'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                    : selectedApp.emailStatus === 'FAILED'
+                    ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                    : 'bg-zinc-800 border-zinc-700 text-zinc-500'
+                }`}>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4" />
+                      <span>
+                        {selectedApp.emailStatus === 'SENT'
+                          ? 'Acceptance email sent successfully'
+                          : selectedApp.emailStatus === 'FAILED'
+                          ? 'Acceptance email failed'
+                          : 'Acceptance email not sent yet'}
+                      </span>
+                    </div>
+                    {selectedApp.emailSentAt && (
+                      <p className="text-[10px] text-zinc-500 pl-6">
+                        Sent: {new Date(selectedApp.emailSentAt).toLocaleString()}
+                      </p>
+                    )}
+                    {selectedApp.emailError && (
+                      <p className="text-[10px] text-rose-400 pl-6">Error: {selectedApp.emailError}</p>
+                    )}
+                    <p className="text-[10px] text-zinc-500 pl-6">Recipient: {selectedApp.email}</p>
+                  </div>
+                  {selectedApp.emailStatus !== 'SENT' && (
+                    <button
+                      disabled={resendingId === selectedApp.id}
+                      onClick={() => handleResendEmail(selectedApp.id)}
+                      className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 hover:bg-blue-500/25 transition-colors disabled:opacity-50 text-[11px]"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${resendingId === selectedApp.id ? 'animate-spin' : ''}`} />
+                      {resendingId === selectedApp.id ? 'Sending...' : 'Resend Email'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
