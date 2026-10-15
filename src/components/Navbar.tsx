@@ -45,11 +45,21 @@ export function Navbar({ settings }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-22">
           
-          {/* Brand Logo & Decorative Emblem */}
+          {/* Brand Logo */}
           <Link href="/" className="flex items-center space-x-3.5 group py-2">
-            <div className="relative w-11 h-11 rounded-full bg-gradient-to-br from-red-500 via-pink-500 to-purple-700 flex items-center justify-center text-white font-bold shadow-pink-glow group-hover:scale-105 transition-transform duration-300 border border-pink-300/40">
-              <Scissors className="w-5 h-5 text-white stroke-[2.2]" />
-              <Crown className="w-3.5 h-3.5 text-pink-300 absolute -top-1.5 -right-1" />
+            <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 group-hover:scale-105 transition-transform duration-300">
+              {settings.logoUrl ? (
+                <img
+                  src={settings.logoUrl}
+                  alt={settings.businessName}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <div className="w-full h-full rounded-full bg-gradient-to-br from-red-500 via-pink-500 to-purple-700 flex items-center justify-center text-white font-bold shadow-pink-glow border border-pink-300/40">
+                  <Scissors className="w-5 h-5 text-white stroke-[2.2]" />
+                  <Crown className="w-3.5 h-3.5 text-pink-300 absolute -top-1.5 -right-1" />
+                </div>
+              )}
             </div>
             <div>
               <span className="font-cinzel text-xl sm:text-2xl font-black tracking-wider text-zinc-900 dark:text-white block group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors uppercase">
