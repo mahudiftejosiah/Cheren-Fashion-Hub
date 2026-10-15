@@ -22,7 +22,7 @@ export interface SettingsData {
 const DEFAULTS: SettingsData = {
   businessName: 'CHEREN FASHION HUB',
   tagline: 'Where Your Style Becomes Reality.',
-  logoUrl: 'https://dwogqcjjeefostuwilti.supabase.co/storage/v1/object/public/cheren-fashion/IMG_8794.PNG',
+  logoUrl: null,
   phone: '+234 903 738 1538',
   email: 'mahudiftefreeman@gmail.com',
   whatsappNumber: '2349037381538',
