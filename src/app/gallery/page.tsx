@@ -10,14 +10,16 @@ export const metadata = {
 export const revalidate = 60;
 
 export default async function GalleryPage() {
-  const mediaItems = await prisma.media.findMany({
-    include: {
-      fashionItem: true,
-    },
+  const allMedia = await prisma.media.findMany({
+    include: { fashionItem: true },
     orderBy: { createdAt: 'desc' },
   });
 
-  const videos = await prisma.video.findMany({
+  // Split into images and videos
+  const mediaItems = allMedia.filter(m => m.mediaType !== 'VIDEO');
+  const mediaVideos = allMedia.filter(m => m.mediaType === 'VIDEO');
+
+  const legacyVideos = await prisma.video.findMany({
     orderBy: { createdAt: 'desc' },
   });
 
@@ -35,7 +37,7 @@ export default async function GalleryPage() {
         </p>
       </div>
 
-      <GalleryClient mediaItems={mediaItems} videos={videos} />
+      <GalleryClient mediaItems={mediaItems} videos={legacyVideos} mediaVideos={mediaVideos} />
     </div>
   );
 }

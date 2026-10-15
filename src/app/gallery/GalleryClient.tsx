@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Play, X, Image as ImageIcon, Film, Crown, Sparkles } from 'lucide-react';
+import { X, Image as ImageIcon, Film } from 'lucide-react';
 
 interface MediaWithItem {
   id: string;
@@ -24,17 +24,20 @@ interface VideoItem {
 }
 
 interface GalleryClientProps {
-  mediaItems: MediaWithItem[];
-  videos: VideoItem[];
+  mediaItems:  MediaWithItem[];   // image-only Media records
+  mediaVideos: MediaWithItem[];   // VIDEO-type Media records uploaded via admin
+  videos:      VideoItem[];       // legacy Video model records
 }
 
-export function GalleryClient({ mediaItems, videos }: GalleryClientProps) {
-  const [activeTab, setActiveTab] = useState<'PHOTOS' | 'VIDEOS'>('PHOTOS');
+export function GalleryClient({ mediaItems, mediaVideos, videos }: GalleryClientProps) {
+  const [activeTab,   setActiveTab]   = useState<'PHOTOS' | 'VIDEOS'>('PHOTOS');
   const [activePhoto, setActivePhoto] = useState<MediaWithItem | null>(null);
+
+  const totalVideos = mediaVideos.length + videos.length;
 
   return (
     <div className="space-y-10">
-      
+
       {/* Filter Tabs */}
       <div className="flex justify-center">
         <div className="inline-flex p-2 rounded-full bg-zinc-900 border border-gold-500/30 shadow-xl">
@@ -58,7 +61,7 @@ export function GalleryClient({ mediaItems, videos }: GalleryClientProps) {
             }`}
           >
             <Film className="w-4 h-4 stroke-[2.2]" />
-            <span>Video Showcase ({videos.length})</span>
+            <span>Video Showcase ({totalVideos})</span>
           </button>
         </div>
       </div>
@@ -78,7 +81,6 @@ export function GalleryClient({ mediaItems, videos }: GalleryClientProps) {
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-85 group-hover:opacity-100"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent opacity-60 group-hover:opacity-90 transition-opacity" />
-
               <div className="absolute bottom-5 left-5 right-5 text-white space-y-1">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-gold-400 block">
                   {media.fashionItem.category}
@@ -89,12 +91,43 @@ export function GalleryClient({ mediaItems, videos }: GalleryClientProps) {
               </div>
             </div>
           ))}
+          {mediaItems.length === 0 && (
+            <p className="col-span-3 text-center text-zinc-500 py-16 text-sm">No photos uploaded yet.</p>
+          )}
         </div>
       )}
 
       {/* Videos Grid */}
       {activeTab === 'VIDEOS' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+          {/* Media-uploaded videos (from admin collections) */}
+          {mediaVideos.map((media) => (
+            <div
+              key={media.id}
+              className="rounded-3xl overflow-hidden luxury-border bg-zinc-900 shadow-2xl p-4 space-y-4"
+            >
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-zinc-950">
+                <video
+                  controls
+                  className="w-full h-full object-cover"
+                  preload="none"
+                >
+                  <source src={media.url} type="video/mp4" />
+                </video>
+              </div>
+              <div className="px-2 space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gold-400 block">
+                  {media.fashionItem.category}
+                </span>
+                <h3 className="font-fashion-serif text-xl font-bold text-white">
+                  {media.fashionItem.title}
+                </h3>
+              </div>
+            </div>
+          ))}
+
+          {/* Legacy Video model records */}
           {videos.map((vid) => (
             <div
               key={vid.id}
@@ -114,15 +147,15 @@ export function GalleryClient({ mediaItems, videos }: GalleryClientProps) {
                 <span className="text-[10px] font-bold uppercase tracking-widest text-gold-400 block">
                   {vid.category}
                 </span>
-                <h3 className="font-fashion-serif text-xl font-bold text-white">
-                  {vid.title}
-                </h3>
-                <p className="text-zinc-400 text-xs font-light">
-                  {vid.description}
-                </p>
+                <h3 className="font-fashion-serif text-xl font-bold text-white">{vid.title}</h3>
+                <p className="text-zinc-400 text-xs font-light">{vid.description}</p>
               </div>
             </div>
           ))}
+
+          {totalVideos === 0 && (
+            <p className="col-span-2 text-center text-zinc-500 py-16 text-sm">No videos uploaded yet.</p>
+          )}
         </div>
       )}
 
@@ -135,7 +168,6 @@ export function GalleryClient({ mediaItems, videos }: GalleryClientProps) {
           >
             <X className="w-6 h-6" />
           </button>
-
           <div className="max-w-4xl max-h-[85vh] flex flex-col items-center">
             <img
               src={activePhoto.url}

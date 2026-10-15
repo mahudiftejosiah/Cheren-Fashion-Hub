@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Search, X, Tag, ArrowRight, ChevronLeft, ChevronRight, Eye, Crown, Sparkles } from 'lucide-react';
+import { Search, X, Tag, ArrowRight, ChevronLeft, ChevronRight, Eye, Crown, Film } from 'lucide-react';
 
 interface MediaItem {
   id: string;
@@ -126,9 +126,6 @@ export function CollectionClient({ collections, fashionItems }: CollectionClient
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredItems.map((item) => {
-            const coverUrl =
-              item.media[0]?.url ||
-              'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop';
             return (
               <div
                 key={item.id}
@@ -136,17 +133,33 @@ export function CollectionClient({ collections, fashionItems }: CollectionClient
                 className="group relative rounded-3xl overflow-hidden luxury-border bg-zinc-950 p-4 shadow-xl cursor-pointer transition-all flex flex-col justify-between"
               >
                 <div className="relative h-96 rounded-2xl overflow-hidden bg-zinc-900 mb-5">
-                  <img
-                    src={coverUrl}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
+                  {item.media[0]?.mediaType === 'VIDEO' ? (
+                    <video
+                      src={item.media[0].url}
+                      className="w-full h-full object-cover"
+                      muted playsInline
+                    />
+                  ) : (
+                    <img
+                      src={item.media[0]?.url || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop'}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-60 group-hover:opacity-85 transition-opacity" />
 
                   {/* Category Badge */}
                   <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-zinc-950/80 backdrop-blur-md border border-pink-500/30 text-pink-400 text-[10px] font-bold uppercase tracking-wider">
                     {item.category}
                   </div>
+
+                  {/* Video badge */}
+                  {item.media[0]?.mediaType === 'VIDEO' && (
+                    <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-zinc-950/80 border border-blue-500/30">
+                      <Film className="w-3 h-3 text-blue-400" />
+                      <span className="text-[9px] text-blue-400 font-bold uppercase">Video</span>
+                    </div>
+                  )}
 
                   {/* Inspect Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -196,11 +209,22 @@ export function CollectionClient({ collections, fashionItems }: CollectionClient
               <div className="space-y-4">
                 <div className="relative h-80 sm:h-96 rounded-2xl overflow-hidden bg-zinc-950 border border-pink-500/20">
                   {activeItem.media[activeMediaIndex] && (
-                    <img
-                      src={activeItem.media[activeMediaIndex].url}
-                      alt={activeItem.title}
-                      className="w-full h-full object-cover"
-                    />
+                    activeItem.media[activeMediaIndex].mediaType === 'VIDEO' ? (
+                      <video
+                        key={activeItem.media[activeMediaIndex].url}
+                        controls
+                        className="w-full h-full object-cover"
+                        preload="metadata"
+                      >
+                        <source src={activeItem.media[activeMediaIndex].url} type="video/mp4" />
+                      </video>
+                    ) : (
+                      <img
+                        src={activeItem.media[activeMediaIndex].url}
+                        alt={activeItem.title}
+                        className="w-full h-full object-cover"
+                      />
+                    )
                   )}
 
                   {activeItem.media.length > 1 && (
@@ -238,17 +262,23 @@ export function CollectionClient({ collections, fashionItems }: CollectionClient
                       <button
                         key={med.id}
                         onClick={() => setActiveMediaIndex(idx)}
-                        className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${
+                        className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
                           activeMediaIndex === idx
                             ? 'border-pink-400 scale-105 shadow-pink-glow'
                             : 'border-zinc-800 opacity-60 hover:opacity-100'
                         }`}
                       >
-                        <img
-                          src={med.url}
-                          alt="Thumbnail"
-                          className="w-full h-full object-cover"
-                        />
+                        {med.mediaType === 'VIDEO' ? (
+                          <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+                            <Film className="w-5 h-5 text-blue-400" />
+                          </div>
+                        ) : (
+                          <img
+                            src={med.url}
+                            alt="Thumbnail"
+                            className="w-full h-full object-cover"
+                          />
+                        )}
                       </button>
                     ))}
                   </div>
