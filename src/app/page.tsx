@@ -117,7 +117,29 @@ export default async function HomePage() {
         </div>
 
         <div className="relative z-10 max-w-5xl mx-auto text-center px-4 sm:px-6 lg:px-8 py-24 space-y-8">
-          
+
+          {/* ── LOGO SHOWCASE ── */}
+          <div className="flex justify-center mb-2">
+            <div className="relative group">
+              {/* Glow behind logo */}
+              <div className="absolute inset-0 rounded-full bg-amber-400 opacity-25 blur-2xl scale-125 animate-pulse" />
+              {/* Rotating ring */}
+              <div className="absolute -inset-1.5 rounded-full bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 opacity-70 animate-spin" style={{ animationDuration: '8s' }} />
+              {/* Logo */}
+              <div className="relative w-40 h-40 sm:w-52 sm:h-52 rounded-full overflow-hidden bg-white shadow-2xl border-4 border-amber-300/60 group-hover:scale-105 transition-transform duration-700">
+                <img
+                  src="https://dwogqcjjeefostuwilti.supabase.co/storage/v1/object/public/cheren-fashion/IMG_8794.PNG"
+                  alt="Cheren Fashion Hub Logo"
+                  className="w-full h-full object-contain p-2"
+                />
+              </div>
+              {/* Sparkle dots */}
+              <div className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-amber-300 animate-ping opacity-75" />
+              <div className="absolute -bottom-1 -left-3 w-3 h-3 rounded-full bg-yellow-400 animate-ping opacity-60" style={{ animationDelay: '0.5s' }} />
+              <div className="absolute top-1/2 -right-4 w-2 h-2 rounded-full bg-amber-200 animate-ping opacity-80" style={{ animationDelay: '1s' }} />
+            </div>
+          </div>
+
           {/* Royal Badge */}
           <div className="inline-flex items-center space-x-2.5 px-5 py-2 rounded-full bg-pink-500/10 border border-pink-400/40 text-pink-700 dark:text-pink-300 text-xs font-bold uppercase tracking-[0.2em] shadow-pink-glow">
             <Sparkles className="w-4 h-4 text-pink-600 dark:text-pink-400" />
