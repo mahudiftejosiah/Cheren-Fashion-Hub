@@ -34,6 +34,9 @@ export function AdminSidebar({ unreadNotificationsCount }: AdminSidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Don't render the sidebar on the login page — user is not authenticated
+  if (pathname === '/admin/login') return null;
+
   // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (mobileOpen) {
