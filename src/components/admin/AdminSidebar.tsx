@@ -21,6 +21,7 @@ import {
   Menu,
   X,
   Award,
+  Film,
 } from 'lucide-react';
 import { logoutAdminAction } from '@/app/actions/auth';
 
@@ -52,6 +53,7 @@ export function AdminSidebar({ unreadNotificationsCount }: AdminSidebarProps) {
     { name: 'Orders', href: '/admin/orders', icon: ShoppingBag },
     { name: 'Customers', href: '/admin/customers', icon: Users },
     { name: 'Collections & Media', href: '/admin/collections', icon: Layers },
+    { name: 'Video Showcase', href: '/admin/videos', icon: Film },
     { name: 'Feedback & Reviews', href: '/admin/feedback', icon: Star },
     { name: 'Quote Requests', href: '/admin/quotes', icon: FileText },
     { name: 'Appointments', href: '/admin/appointments', icon: Calendar },

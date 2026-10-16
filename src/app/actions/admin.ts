@@ -776,3 +776,83 @@ export async function toggleCertificatePublishAction(id: string, isPublished: bo
     return { success: false, error: 'Failed to update publish status.' };
   }
 }
+
+// --- VIDEO CRUD ---
+export async function createVideoAction(formData: FormData) {
+  const title        = (formData.get('title')        as string)?.trim();
+  const description  = (formData.get('description')  as string)?.trim();
+  const videoUrl     = (formData.get('videoUrl')     as string)?.trim();
+  const thumbnailUrl = (formData.get('thumbnailUrl') as string)?.trim() || '';
+  const category     = (formData.get('category')     as string)?.trim() || 'Fashion';
+  const isFeatured   = formData.get('isFeatured') === 'true';
+
+  if (!title || !description || !videoUrl) {
+    return { success: false, error: 'Title, description, and video are required.' };
+  }
+
+  try {
+    await prisma.video.create({
+      data: { title, description, videoUrl, thumbnailUrl, category, isFeatured },
+    });
+    revalidatePath('/');
+    revalidatePath('/gallery');
+    revalidatePath('/admin/videos');
+    return { success: true };
+  } catch (err) {
+    console.error('Error creating video:', err);
+    return { success: false, error: 'Failed to create video.' };
+  }
+}
+
+export async function updateVideoAction(formData: FormData) {
+  const id           = (formData.get('id')           as string)?.trim();
+  const title        = (formData.get('title')        as string)?.trim();
+  const description  = (formData.get('description')  as string)?.trim();
+  const videoUrl     = (formData.get('videoUrl')     as string)?.trim();
+  const thumbnailUrl = (formData.get('thumbnailUrl') as string)?.trim() || '';
+  const category     = (formData.get('category')     as string)?.trim() || 'Fashion';
+  const isFeatured   = formData.get('isFeatured') === 'true';
+
+  if (!id || !title || !description || !videoUrl) {
+    return { success: false, error: 'All required fields must be filled.' };
+  }
+
+  try {
+    await prisma.video.update({
+      where: { id },
+      data: { title, description, videoUrl, thumbnailUrl, category, isFeatured },
+    });
+    revalidatePath('/');
+    revalidatePath('/gallery');
+    revalidatePath('/admin/videos');
+    return { success: true };
+  } catch (err) {
+    console.error('Error updating video:', err);
+    return { success: false, error: 'Failed to update video.' };
+  }
+}
+
+export async function deleteVideoAction(id: string) {
+  try {
+    await prisma.video.delete({ where: { id } });
+    revalidatePath('/');
+    revalidatePath('/gallery');
+    revalidatePath('/admin/videos');
+    return { success: true };
+  } catch (err) {
+    console.error('Error deleting video:', err);
+    return { success: false, error: 'Failed to delete video.' };
+  }
+}
+
+export async function toggleVideoFeaturedAction(id: string, isFeatured: boolean) {
+  try {
+    await prisma.video.update({ where: { id }, data: { isFeatured } });
+    revalidatePath('/');
+    revalidatePath('/gallery');
+    revalidatePath('/admin/videos');
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: 'Failed to update featured status.' };
+  }
+}

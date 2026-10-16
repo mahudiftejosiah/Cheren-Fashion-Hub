@@ -43,9 +43,10 @@ export default async function HomePage() {
     orderBy: { createdAt: 'desc' },
   });
 
-  // Fetch Videos
+  // Fetch Featured Videos (admin-controlled via "Feature on homepage" toggle)
   const videos = await prisma.video.findMany({
-    take: 2,
+    where: { isFeatured: true },
+    take: 6,
     orderBy: { createdAt: 'desc' },
   });
 
@@ -313,7 +314,7 @@ export default async function HomePage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className={`grid gap-8 ${videos.length === 1 ? 'grid-cols-1 max-w-2xl mx-auto' : videos.length <= 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
             {videos.map((vid) => (
               <div
                 key={vid.id}
