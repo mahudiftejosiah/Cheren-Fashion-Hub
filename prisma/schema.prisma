@@ -238,3 +238,15 @@ model BusinessSettings {
   themeDefault    String   @default("dark")
   updatedAt       DateTime @updatedAt
 }
+
+model TeamMember {
+  id           String   @id @default(uuid())
+  name         String
+  role         String   // e.g. "Co-Founder & Creative Director"
+  bio          String?
+  imageUrl     String
+  displayOrder Int      @default(0)
+  isPublished  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

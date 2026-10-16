@@ -11,6 +11,8 @@ import {
   Calendar,
   ExternalLink,
   Download,
+  Crown,
+  Gem,
 } from 'lucide-react';
 import { getBusinessSettings } from '@/lib/getSettings';
 import { prisma } from '@/lib/prisma';
@@ -27,6 +29,12 @@ export default async function AboutPage() {
   const certificates = await prisma.certificate.findMany({
     where: { isPublished: true },
     orderBy: [{ displayOrder: 'asc' }, { createdAt: 'desc' }],
+  });
+
+  // Fetch published team members / co-founders
+  const teamMembers = await prisma.teamMember.findMany({
+    where: { isPublished: true },
+    orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
   });
 
   const values = [
@@ -152,6 +160,69 @@ export default async function AboutPage() {
           </div>
         </div>
       </section>
+
+      {/* CO-FOUNDERS & TEAM */}
+      {teamMembers.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
+            <span className="text-xs font-bold text-pink-600 dark:text-pink-400 tracking-[0.25em] uppercase block font-cinzel">
+              The Visionaries
+            </span>
+            <h2 className="font-fashion-serif text-3xl sm:text-5xl font-bold text-zinc-900 dark:text-white">
+              Meet Our Co-Founders
+            </h2>
+            <div className="flex items-center justify-center space-x-4 max-w-xs mx-auto">
+              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-pink-400" />
+              <Crown className="w-4 h-4 text-pink-600 dark:text-pink-400 shrink-0" />
+              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-pink-400" />
+            </div>
+            <p className="text-zinc-600 dark:text-zinc-400 text-sm font-light">
+              The creative minds and driving force behind {settings.businessName}.
+            </p>
+          </div>
+
+          <div className={`grid gap-8 ${
+            teamMembers.length === 1 ? 'grid-cols-1 max-w-sm mx-auto' :
+            teamMembers.length === 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto' :
+            teamMembers.length <= 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-' + Math.min(teamMembers.length, 4) :
+            'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+          }`}>
+            {teamMembers.map((member) => (
+              <div key={member.id} className="group relative rounded-3xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl hover:shadow-2xl hover:border-pink-400/50 dark:hover:border-pink-500/40 transition-all duration-500">
+                {/* Photo */}
+                <div className="relative h-72 sm:h-80 overflow-hidden bg-zinc-100 dark:bg-zinc-950">
+                  <img
+                    src={member.imageUrl}
+                    alt={member.name}
+                    className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
+
+                  {/* Badge overlay at bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-pink-500/30 to-purple-500/30 backdrop-blur-md border border-pink-400/30 mb-2">
+                      <Gem className="w-3 h-3 text-pink-300" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-pink-200">{member.role}</span>
+                    </div>
+                    <h3 className="font-fashion-serif text-xl sm:text-2xl font-bold text-white leading-tight">
+                      {member.name}
+                    </h3>
+                  </div>
+                </div>
+
+                {/* Bio */}
+                {member.bio && (
+                  <div className="p-5">
+                    <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
+                      {member.bio}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Core Values */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

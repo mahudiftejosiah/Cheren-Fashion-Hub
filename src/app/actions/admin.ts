@@ -856,3 +856,79 @@ export async function toggleVideoFeaturedAction(id: string, isFeatured: boolean)
     return { success: false, error: 'Failed to update featured status.' };
   }
 }
+
+// --- TEAM MEMBER CRUD ---
+export async function createTeamMemberAction(formData: FormData) {
+  const name         = (formData.get('name')         as string)?.trim();
+  const role         = (formData.get('role')         as string)?.trim();
+  const bio          = (formData.get('bio')          as string)?.trim() || null;
+  const imageUrl     = (formData.get('imageUrl')     as string)?.trim();
+  const displayOrder = parseInt((formData.get('displayOrder') as string) || '0', 10);
+  const isPublished  = formData.get('isPublished') !== 'false';
+
+  if (!name || !role || !imageUrl) {
+    return { success: false, error: 'Name, role, and photo are required.' };
+  }
+
+  try {
+    await prisma.teamMember.create({
+      data: { name, role, bio, imageUrl, displayOrder, isPublished },
+    });
+    revalidatePath('/about');
+    revalidatePath('/admin/team');
+    return { success: true };
+  } catch (err) {
+    console.error('Error creating team member:', err);
+    return { success: false, error: 'Failed to save team member.' };
+  }
+}
+
+export async function updateTeamMemberAction(formData: FormData) {
+  const id           = (formData.get('id')           as string)?.trim();
+  const name         = (formData.get('name')         as string)?.trim();
+  const role         = (formData.get('role')         as string)?.trim();
+  const bio          = (formData.get('bio')          as string)?.trim() || null;
+  const imageUrl     = (formData.get('imageUrl')     as string)?.trim();
+  const displayOrder = parseInt((formData.get('displayOrder') as string) || '0', 10);
+  const isPublished  = formData.get('isPublished') !== 'false';
+
+  if (!id || !name || !role || !imageUrl) {
+    return { success: false, error: 'All required fields must be filled.' };
+  }
+
+  try {
+    await prisma.teamMember.update({
+      where: { id },
+      data: { name, role, bio, imageUrl, displayOrder, isPublished },
+    });
+    revalidatePath('/about');
+    revalidatePath('/admin/team');
+    return { success: true };
+  } catch (err) {
+    console.error('Error updating team member:', err);
+    return { success: false, error: 'Failed to update team member.' };
+  }
+}
+
+export async function deleteTeamMemberAction(id: string) {
+  try {
+    await prisma.teamMember.delete({ where: { id } });
+    revalidatePath('/about');
+    revalidatePath('/admin/team');
+    return { success: true };
+  } catch (err) {
+    console.error('Error deleting team member:', err);
+    return { success: false, error: 'Failed to delete team member.' };
+  }
+}
+
+export async function toggleTeamMemberPublishAction(id: string, isPublished: boolean) {
+  try {
+    await prisma.teamMember.update({ where: { id }, data: { isPublished } });
+    revalidatePath('/about');
+    revalidatePath('/admin/team');
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: 'Failed to update publish status.' };
+  }
+}
