@@ -158,13 +158,17 @@ export function Footer({ settings }: FooterProps) {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-16 pt-8 border-t border-zinc-200 dark:border-zinc-900 flex flex-col md:flex-row items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-500 space-y-4 md:space-y-0">
-          <p>© {currentYear} {settings.businessName}. All rights reserved.</p>
-          
-          <div className="flex items-center space-x-6">
-            <Link href="/privacy" className="hover:text-zinc-300 transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-zinc-300 transition-colors">Terms of Service</Link>
+        <div className="mt-16 pt-8 border-t border-zinc-200 dark:border-zinc-900 flex flex-col items-center space-y-4 text-[11px] text-zinc-500 dark:text-zinc-500">
+          <div className="flex flex-col md:flex-row items-center justify-between w-full space-y-4 md:space-y-0">
+            <p>© {currentYear} {settings.businessName}. All rights reserved.</p>
+            <div className="flex items-center space-x-6">
+              <Link href="/privacy" className="hover:text-zinc-300 transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-zinc-300 transition-colors">Terms of Service</Link>
+            </div>
           </div>
+          <p className="text-[10px] tracking-widest uppercase text-zinc-600 dark:text-zinc-600 font-semibold">
+            Powered by DMFTECH
+          </p>
         </div>
       </div>
     </footer>

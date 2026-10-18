@@ -79,26 +79,9 @@ export default async function AboutPage() {
         </p>
       </section>
 
-      {/* Story & Founder */}
+      {/* Story */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          
-          {/* Image */}
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-zinc-900 border border-zinc-200 dark:border-zinc-800 h-[480px]">
-            <img
-              src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?q=80&w=1000&auto=format&fit=crop"
-              alt="Fashion Studio Tailoring"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
-            <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-zinc-950/80 backdrop-blur-md border border-zinc-800 text-white">
-              <span className="text-xs font-bold uppercase tracking-wider text-gold-400 block">Master Tailor & Founder</span>
-              <p className="font-fashion-serif text-lg font-bold">Cheren Lead Artisan</p>
-            </div>
-          </div>
-
-          {/* Text Story */}
-          <div className="space-y-6">
+        <div className="space-y-6">
             <h2 className="font-fashion-serif text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white">
               Where Style Meets Perfection
             </h2>
@@ -126,8 +109,6 @@ export default async function AboutPage() {
               </ul>
             </div>
           </div>
-
-        </div>
       </section>
 
       {/* Mission & Vision */}
