@@ -15,12 +15,11 @@ import {
   Crown
 } from 'lucide-react';
 import { SettingsData } from '@/lib/getSettings';
+import { LogoSpin } from './LogoSpin';
 
 interface NavbarProps {
   settings: SettingsData;
 }
-
-const LOGO_URL = 'https://dwogqcjjeefostuwilti.supabase.co/storage/v1/object/public/cheren-fashion/IMG_8794.PNG';
 
 export function Navbar({ settings }: NavbarProps) {
   const pathname = usePathname();
@@ -49,12 +48,9 @@ export function Navbar({ settings }: NavbarProps) {
           
           {/* Brand Logo */}
           <Link href="/" className="flex items-center space-x-3.5 group py-2">
-            <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 group-hover:scale-105 transition-transform duration-300 shadow-pink-glow border-2 border-amber-400/60">
-              <img
-                src={LOGO_URL}
-                alt={settings.businessName}
-                className="w-full h-full object-contain"
-              />
+            {/* Outer ring keeps the border, shadow, and hover-scale; LogoSpin handles the animation */}
+            <div className="relative w-11 h-11 rounded-full shrink-0 group-hover:scale-105 transition-transform duration-300 shadow-pink-glow border-2 border-amber-400/60">
+              <LogoSpin size="w-full h-full" alt={settings.businessName} />
             </div>
             <div>
               <span className="font-cinzel text-xl sm:text-2xl font-black tracking-wider text-zinc-900 dark:text-white block group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors uppercase">

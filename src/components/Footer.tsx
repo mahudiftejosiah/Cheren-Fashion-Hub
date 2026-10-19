@@ -13,12 +13,11 @@ import {
   Crown
 } from 'lucide-react';
 import { SettingsData } from '@/lib/getSettings';
+import { LogoSpin } from './LogoSpin';
 
 interface FooterProps {
   settings: SettingsData;
 }
-
-const LOGO_URL = 'https://dwogqcjjeefostuwilti.supabase.co/storage/v1/object/public/cheren-fashion/IMG_8794.PNG';
 
 export function Footer({ settings }: FooterProps) {
   const currentYear = new Date().getFullYear();
@@ -35,12 +34,9 @@ export function Footer({ settings }: FooterProps) {
           {/* Col 1: Brand Info */}
           <div className="space-y-5">
             <Link href="/" className="flex items-center space-x-3.5 group">
-              <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 group-hover:scale-105 transition-transform duration-300 shadow-pink-glow border-2 border-amber-400/60">
-                <img
-                  src={LOGO_URL}
-                  alt={settings.businessName}
-                  className="w-full h-full object-contain"
-                />
+              {/* Outer ring keeps border + shadow; LogoSpin handles animation */}
+              <div className="relative w-11 h-11 rounded-full shrink-0 group-hover:scale-105 transition-transform duration-300 shadow-pink-glow border-2 border-amber-400/60">
+                <LogoSpin size="w-full h-full" alt={settings.businessName} />
               </div>
               <span className="font-cinzel text-xl font-black text-zinc-900 dark:text-white tracking-wider uppercase">
                 {settings.businessName}

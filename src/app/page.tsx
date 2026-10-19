@@ -22,6 +22,7 @@ import {
 import { prisma } from '@/lib/prisma';
 import { getBusinessSettings } from '@/lib/getSettings';
 import { ReviewsSection } from '@/components/ReviewsSection';
+import { LogoSpin } from '@/components/LogoSpin';
 
 export const revalidate = 60; // Refresh page cache every 60s
 
@@ -126,12 +127,12 @@ export default async function HomePage() {
               <div className="absolute inset-0 rounded-full bg-amber-400 opacity-25 blur-2xl scale-125 animate-pulse" />
               {/* Rotating ring */}
               <div className="absolute -inset-1.5 rounded-full bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 opacity-70 animate-spin" style={{ animationDuration: '8s' }} />
-              {/* Logo */}
-              <div className="relative w-40 h-40 sm:w-52 sm:h-52 rounded-full overflow-hidden bg-white shadow-2xl border-4 border-amber-300/60 group-hover:scale-105 transition-transform duration-700">
-                <img
-                  src="https://dwogqcjjeefostuwilti.supabase.co/storage/v1/object/public/cheren-fashion/IMG_8794.PNG"
+              {/* Logo — globe-spin animation via LogoSpin */}
+              <div className="relative w-40 h-40 sm:w-52 sm:h-52 rounded-full bg-white shadow-2xl border-4 border-amber-300/60 group-hover:scale-105 transition-transform duration-700">
+                <LogoSpin
+                  size="w-full h-full"
                   alt="Cheren Fashion Hub Logo"
-                  className="w-full h-full object-contain p-2"
+                  hero
                 />
               </div>
               {/* Sparkle dots */}

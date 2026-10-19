@@ -151,6 +151,45 @@ html:not(.dark) .glass-panel-luxury {
   100% { transform: translateY(-30px) scale(1.1); }
 }
 
+/* ── Globe Spin Animation ──────────────────────────────────────────────────
+   Two layered keyframes produce the illusion of a 3D globe rotation:
+   1. logo-globe-spin  — continuous Y-axis rotation with perspective depth
+   2. logo-globe-scale — a subtle scaleX oscillation that mimics the elliptical
+      compression a sphere exhibits as it rotates (widest at front, narrowest
+      at sides). Both run simultaneously on the same element.
+   ───────────────────────────────────────────────────────────────────────── */
+
+@keyframes logo-globe-spin {
+  0%   { transform: perspective(300px) rotateY(0deg); }
+  100% { transform: perspective(300px) rotateY(360deg); }
+}
+
+@keyframes logo-globe-scale {
+  0%   { transform: scaleX(1); }
+  25%  { transform: scaleX(0.72); }
+  50%  { transform: scaleX(1); }
+  75%  { transform: scaleX(0.72); }
+  100% { transform: scaleX(1); }
+}
+
+.logo-globe {
+  animation:
+    logo-globe-spin  8s linear infinite,
+    logo-globe-scale 8s ease-in-out infinite;
+  transform-origin: center center;
+  will-change: transform;
+  /* Prevent sub-pixel jitter during rotation */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Respect the user's OS-level "reduce motion" preference */
+@media (prefers-reduced-motion: reduce) {
+  .logo-globe {
+    animation: none;
+  }
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
