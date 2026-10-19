@@ -190,6 +190,36 @@ html:not(.dark) .glass-panel-luxury {
   }
 }
 
+/* ── Hero Logo Rainbow Background (dark mode only) ────────────────────────
+   Cycles through a full-spectrum hue rotation so the background behind
+   the spinning logo changes colour continuously in dark mode.
+   Applied via .logo-hero-rainbow; the .dark selector activates it.
+   Light mode keeps bg-white (set inline on the element in page.tsx).
+   ───────────────────────────────────────────────────────────────────────── */
+
+@keyframes logo-rainbow-bg {
+  0%   { background-color: #ff0040; }   /* red      */
+  14%  { background-color: #ff6600; }   /* orange   */
+  28%  { background-color: #ffd700; }   /* yellow   */
+  42%  { background-color: #00cc44; }   /* green    */
+  57%  { background-color: #0088ff; }   /* blue     */
+  71%  { background-color: #7733ff; }   /* indigo   */
+  85%  { background-color: #dd00cc; }   /* violet   */
+  100% { background-color: #ff0040; }   /* back to red (seamless loop) */
+}
+
+/* Active only inside a .dark ancestor — ignored in light mode */
+.dark .logo-hero-rainbow {
+  animation: logo-rainbow-bg 6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dark .logo-hero-rainbow {
+    animation: none;
+    background-color: #190B28; /* static deep purple fallback */
+  }
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
