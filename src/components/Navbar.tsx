@@ -49,7 +49,7 @@ export function Navbar({ settings }: NavbarProps) {
           {/* Brand Logo */}
           <Link href="/" className="flex items-center space-x-3.5 group py-2">
             {/* Outer ring keeps the border, shadow, and hover-scale; LogoSpin handles the animation */}
-            <div className="relative w-11 h-11 rounded-full shrink-0 group-hover:scale-105 transition-transform duration-300 shadow-pink-glow border-2 border-amber-400/60">
+            <div className="relative w-11 h-11 rounded-full shrink-0 group-hover:scale-105 transition-all duration-300 shadow-pink-glow border-2 border-amber-400/60 bg-white dark:bg-purple-950/70">
               <LogoSpin size="w-full h-full" alt={settings.businessName} />
             </div>
             <div>

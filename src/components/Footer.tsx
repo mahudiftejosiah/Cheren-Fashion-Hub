@@ -35,7 +35,7 @@ export function Footer({ settings }: FooterProps) {
           <div className="space-y-5">
             <Link href="/" className="flex items-center space-x-3.5 group">
               {/* Outer ring keeps border + shadow; LogoSpin handles animation */}
-              <div className="relative w-11 h-11 rounded-full shrink-0 group-hover:scale-105 transition-transform duration-300 shadow-pink-glow border-2 border-amber-400/60">
+              <div className="relative w-11 h-11 rounded-full shrink-0 group-hover:scale-105 transition-all duration-300 shadow-pink-glow border-2 border-amber-400/60 bg-white dark:bg-purple-950/70">
                 <LogoSpin size="w-full h-full" alt={settings.businessName} />
               </div>
               <span className="font-cinzel text-xl font-black text-zinc-900 dark:text-white tracking-wider uppercase">

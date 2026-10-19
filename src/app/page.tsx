@@ -128,7 +128,7 @@ export default async function HomePage() {
               {/* Rotating ring */}
               <div className="absolute -inset-1.5 rounded-full bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 opacity-70 animate-spin" style={{ animationDuration: '8s' }} />
               {/* Logo — globe-spin animation via LogoSpin */}
-              <div className="relative w-40 h-40 sm:w-52 sm:h-52 rounded-full bg-white shadow-2xl border-4 border-amber-300/60 group-hover:scale-105 transition-transform duration-700">
+              <div className="relative w-40 h-40 sm:w-52 sm:h-52 rounded-full bg-white dark:bg-purple-950/70 shadow-2xl border-4 border-amber-300/60 group-hover:scale-105 transition-all duration-700">
                 <LogoSpin
                   size="w-full h-full"
                   alt="Cheren Fashion Hub Logo"
